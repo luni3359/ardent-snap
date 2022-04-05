@@ -1,39 +1,35 @@
 const path = require("path");
-// const webpack = require("webpack");
 
-const output_path = path.resolve(__dirname, "dist");
+let output_path = path.resolve(__dirname, "dist");
 
 module.exports = {
     mode: "development",
-    entry: "./src/main.js",
-    devtool: false,             // makes output file readable
 
-    optimization: {
-        minimize: false,
-    },
+    entry: "./src/main.js",
     output: {
         path: output_path,
         filename: "main.js",
     },
+
+    module: {
+        rules: [
+            {
+                test: /\.scss$/i,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "postcss-loader",
+                    "sass-loader",
+                ]
+            }
+        ]
+    },
+
+    devtool: "source-map",
     devServer: {
         port: 8080,
         static: {
             directory: output_path,
         },
     },
-    module: {
-        rules: [
-            {
-                test: /\.s[ac]ss$/i,
-                use: [
-                    "style-loader",
-                    "css-loader",
-                    "sass-loader"
-                ]
-            }
-        ]
-    }
-    // plugins: [
-    //     new webpack.HotModuleReplacementPlugin()
-    // ],
 };
