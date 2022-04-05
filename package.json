@@ -1,0 +1,29 @@
+{
+  "name": "ardent-snap",
+  "version": "0.1.0",
+  "description": "A shooter game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "server": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luni3359/ardent-snap.git"
+  },
+  "keywords": [],
+  "author": "luni3359",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luni3359/ardent-snap/issues"
+  },
+  "homepage": "https://github.com/luni3359/ardent-snap#readme",
+  "devDependencies": {
+    "sass": "^1.49.11",
+    "sass-loader": "^12.6.0",
+    "webpack": "^5.71.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4"
+  }
+}
