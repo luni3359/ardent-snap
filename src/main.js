@@ -47,12 +47,30 @@ function Vector2D(x, y) {
 }
 
 Vector2D.prototype.magnitude = function () {
-    return Math.sqrt(Math.abs(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
+    return Math.sqrt(this.x * this.x + this.y * this.y);
 };
 
 Vector2D.prototype.unit = function () {
-    const magnitude = this.magnitude;
+    const magnitude = this.magnitude();
+
+    if (!magnitude) {
+        return new Vector2D();
+    }
+
     return new Vector2D(this.x / magnitude, this.y / magnitude);
+};
+
+Vector2D.prototype.normalize = function () {
+    const magnitude = this.magnitude();
+
+    if (!magnitude) {
+        this.x = 0;
+        this.y = 0;
+        return;
+    }
+
+    this.x /= magnitude;
+    this.y /= magnitude
 };
 
 function Player() {
@@ -62,7 +80,7 @@ function Player() {
 }
 
 Player.prototype.update = function (dt) {
-    let direction = new Vector2D();
+    const direction = new Vector2D();
 
     if (keys["a"]) {
         direction.x -= 1;
@@ -77,16 +95,10 @@ Player.prototype.update = function (dt) {
         direction.y += 1;
     }
 
-    if (direction.x && direction.y) {
-        let magnitude = Math.sqrt(Math.pow(direction.x, 2), Math.pow(direction.y, 2));
-        this.position.x += direction.x / magnitude;
-        this.position.y += direction.y / magnitude;
-    } else {
-        this.position.x += direction.x;
-        this.position.y += direction.y;
-    }
-
-    print(`x: ${this.position.x}, y: ${this.position.y}`);
+    direction.normalize();
+    
+    this.position.x += this.speed * direction.x * dt;
+    this.position.y += this.speed * direction.y * dt;
 
     if (this.position.x + this.size > canvas._resolution[0]) {
         this.position.x = canvas._resolution[0] - this.size;
