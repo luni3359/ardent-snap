@@ -1,6 +1,7 @@
 "use strict";
 
 const keys = {};
+let players = [];
 let canvas;
 let ctx;
 
@@ -65,11 +66,23 @@ Vector2D.prototype.normalize = function () {
     this.y /= magnitude;
 };
 
+function Entity(x, y, w, h) {
+    this.position = new Vector2D(x, y);
+    this.size = new Vector2D(w, h);
+}
+
+Entity.prototype.draw = function () {
+    ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
+};
+
 function Player(x, y, w, h) {
+    Entity.call(this);
     this.position = new Vector2D(x, y);
     this.size = new Vector2D(w || 40, h || 60);
     this.speed = 1;
 }
+Player.prototype = Object.create(Entity.prototype);
+Player.prototype.constructor = Player;
 
 Player.prototype.update = function (dt) {
     const direction = new Vector2D();
@@ -109,11 +122,6 @@ Player.prototype.update = function (dt) {
     }
 };
 
-Player.prototype.draw = function () {
-    ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
-};
-
-let players = [];
 function update(dt) {
     for (let i = 0; i < players.length; i++) {
         players[i].update(dt);
@@ -149,7 +157,7 @@ function gameRun(timestamp) {
 function main() {
     canvas = new GameCanvas(document.getElementById("game-window"));
     ctx = canvas._canvas.getContext("2d");
-    
+
     let player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
     players.push(player);
 
