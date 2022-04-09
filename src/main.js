@@ -70,7 +70,7 @@ Vector2D.prototype.normalize = function () {
     }
 
     this.x /= magnitude;
-    this.y /= magnitude
+    this.y /= magnitude;
 };
 
 function Player() {
