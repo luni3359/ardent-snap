@@ -16,22 +16,12 @@ function sleep(milliseconds) {
     } while (currentDate - date < milliseconds);
 }
 
-/**
- * @class
- * @param {HTMLCanvasElement} canvas
- * @prop {HTMLCanvasElement} _canvas
- */
 function GameCanvas(canvas) {
     this._canvas = canvas || null;
     this._resolution = new Vector2D(640, 720);
     this.setResolution();
 }
 
-/**
- *
- * @param {Number} w
- * @param {Number} h
- */
 GameCanvas.prototype.setResolution = function (w, h) {
     this._resolution.x = w || this._resolution.x;
     this._resolution.y = h || this._resolution.y;
@@ -140,11 +130,10 @@ function draw() {
 
 let last_time = performance.now();
 // let simulate_lag_timer = 0;
-function gameRun() {
-    let current_time = performance.now();
-    // print(`prev: ${last_time}, now: ${current_time}`);
-    const dt = current_time - last_time;
-    last_time = current_time;
+function gameRun(timestamp) {
+    requestAnimationFrame(gameRun);
+    const dt = timestamp - last_time;
+    last_time = timestamp;
 
     // simulate_lag_timer++;
     // if (simulate_lag_timer > 500) {
@@ -158,12 +147,13 @@ function gameRun() {
 }
 
 function main() {
-    const player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
-    players.push(player);
-    
     canvas = new GameCanvas(document.getElementById("game-window"));
     ctx = canvas._canvas.getContext("2d");
-    window.setInterval(gameRun, 10);
+    
+    let player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
+    players.push(player);
+
+    gameRun(performance.now());
 }
 
 window.addEventListener("keydown", e => {
