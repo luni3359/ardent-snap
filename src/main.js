@@ -46,7 +46,7 @@ Entity.prototype.draw = function () {
 function Bullet(x, y) {
     Entity.call(this, x, y);
     this.topspeed = 1;
-    this.diameter = 8;
+    this.radius = 8;
     this.speed = new Vector2D(Math.random() * this.topspeed - this.topspeed / 2, Math.random() * this.topspeed - this.topspeed / 2);
 
 }
@@ -57,26 +57,26 @@ Bullet.prototype.update = function (dt) {
     this.position.x += this.speed.x * dt;
     this.position.y += this.speed.y * dt;
 
-    if (this.position.x + this.diameter > canvas._resolution.x) {
+    if (this.position.x + this.radius > canvas._resolution.x) {
         this.speed.x = -this.speed.x;
-        this.position.x = canvas._resolution.x - this.diameter;
-    } else if (this.position.x - this.diameter < 0) {
+        this.position.x = canvas._resolution.x - this.radius;
+    } else if (this.position.x - this.radius < 0) {
         this.speed.x = -this.speed.x;
-        this.position.x = this.diameter;
+        this.position.x = this.radius;
     }
 
-    if (this.position.y + this.diameter > canvas._resolution.y) {
+    if (this.position.y + this.radius > canvas._resolution.y) {
         this.speed.y = -this.speed.y;
-        this.position.y = canvas._resolution.y - this.diameter;
-    } else if (this.position.y - this.diameter < 0) {
+        this.position.y = canvas._resolution.y - this.radius;
+    } else if (this.position.y - this.radius < 0) {
         this.speed.y = -this.speed.y;
-        this.position.y = this.diameter;
+        this.position.y = this.radius;
     }
 };
 
 Bullet.prototype.draw = function () {
     ctx.beginPath();
-    ctx.arc(this.position.x, this.position.y, this.diameter, 0, 2 * Math.PI, false);
+    ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
     // ctx.fillStyle = 'black';
     ctx.fill();
 };
