@@ -8,6 +8,13 @@ function print(...args) {
     console.log(...args);
 }
 
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+}
 
 /**
  * @class
@@ -118,22 +125,13 @@ Player.prototype.draw = function () {
 };
 
 let players = [];
-let update_last = performance.now();
-function update() {
-    let update_now = performance.now();
-    const dt = update_now - update_last;
-    // print(dt);
-    update_last = update_now;
-
+function update(dt) {
     for (let i = 0; i < players.length; i++) {
         players[i].update(dt);
     }
 }
 
-let draw_last = performance.now();
-function draw(dt) {
-    // print(ct - draw_last)
-    // draw_last = ct;
+function draw() {
     ctx.clearRect(0, 0, 640, 720);
 
     for (let i = 0; i < players.length; i++) {
@@ -141,8 +139,22 @@ function draw(dt) {
     }
 }
 
+let last_time = performance.now();
+let simulate_lag_timer = 0;
 function gameRun() {
-    update();
+    let current_time = performance.now();
+    // print(`prev: ${last_time}, now: ${current_time}`);
+    const dt = current_time - last_time;
+    last_time = current_time;
+
+    simulate_lag_timer++;
+    if (simulate_lag_timer > 500) {
+        simulate_lag_timer = 0;
+        sleep(500);
+        print("whoops");
+    }
+
+    update(dt);
     draw();
 }
 
