@@ -175,7 +175,7 @@ function main() {
     let player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
     players.push(player);
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 5; i++) {
         bullets.push(new Bullet(Math.random() * 300, Math.random() * 300));
     }
 
