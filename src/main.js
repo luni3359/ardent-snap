@@ -74,8 +74,8 @@ Vector2D.prototype.normalize = function () {
 };
 
 function Player() {
-    this.size = 50;
     this.position = new Vector2D();
+    this.size = new Vector2D(40, 60);
     this.speed = 1;
 }
 
@@ -96,25 +96,25 @@ Player.prototype.update = function (dt) {
     }
 
     direction.normalize();
-    
+
     this.position.x += this.speed * direction.x * dt;
     this.position.y += this.speed * direction.y * dt;
 
-    if (this.position.x + this.size > canvas._resolution[0]) {
-        this.position.x = canvas._resolution[0] - this.size;
+    if (this.position.x + this.size.x > canvas._resolution[0]) {
+        this.position.x = canvas._resolution[0] - this.size.x;
     } else if (this.position.x < 0) {
         this.position.x = 0;
     }
 
-    if (this.position.y + this.size > canvas._resolution[1]) {
-        this.position.y = canvas._resolution[1] - this.size;
+    if (this.position.y + this.size.y > canvas._resolution[1]) {
+        this.position.y = canvas._resolution[1] - this.size.y;
     } else if (this.position.y < 0) {
         this.position.y = 0;
     }
 };
 
 Player.prototype.draw = function () {
-    ctx.fillRect(this.position.x, this.position.y, this.size, this.size);
+    ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
 };
 
 let players = [];
