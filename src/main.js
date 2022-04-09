@@ -1,3 +1,5 @@
+"use strict";
+
 const keys = {};
 let canvas;
 let ctx;
@@ -42,21 +44,35 @@ function Player() {
     this.size = 50;
     this.x = 0;
     this.y = 0;
+    this.speed = 1;
 }
 
 Player.prototype.update = function (dt) {
+    let direction = [0, 0];
+
     if (keys["a"]) {
-        this.x -= 1 * dt;
+        direction[0] -= 1;
     }
     if (keys["d"]) {
-        this.x += 1 * dt;
+        direction[0] += 1;
     }
     if (keys["w"]) {
-        this.y -= 1 * dt;
+        direction[1] -= 1;
     }
     if (keys["s"]) {
-        this.y += 1 * dt;
+        direction[1] += 1;
     }
+
+    if (direction[0] && direction[1]) {
+        let magnitude = Math.sqrt(Math.pow(direction[0], 2), Math.pow(direction[1], 2));
+        this.x += direction[0] / magnitude;
+        this.y += direction[1] / magnitude;
+    } else {
+        this.x += direction[0];
+        this.y += direction[1];
+    }
+
+    print(`x: ${this.x}, y: ${this.y}`);
 
     if (this.x + this.size > canvas._resolution[0]) {
         this.x = canvas._resolution[0] - this.size;
@@ -88,21 +104,19 @@ function update() {
     }
 }
 
-draw_last = performance.now();
-function draw(ct) {
+let draw_last = performance.now();
+function draw(dt) {
     // print(ct - draw_last)
-    draw_last = ct;
+    // draw_last = ct;
     ctx.clearRect(0, 0, 640, 720);
 
     for (let i = 0; i < players.length; i++) {
         players[i].draw();
     }
-
-    requestAnimationFrame(draw)
 }
 
 function gameRun() {
-    setInterval(update, 10);
+    update();
     draw();
 }
 
@@ -110,7 +124,7 @@ function main() {
     canvas = new GameCanvas(document.getElementById("game-window"));
     ctx = canvas._canvas.getContext("2d");
     players.push(new Player());
-    gameRun();
+    window.setInterval(gameRun, 10);
 }
 
 window.addEventListener("keydown", e => {
