@@ -45,7 +45,7 @@ Entity.prototype.draw = function () {
 
 function Bullet(x, y) {
     Entity.call(this, x, y);
-    this.topspeed = 1;
+    this.topspeed = 500;
     this.radius = 8;
     this.speed = new Vector2D(Math.random() * this.topspeed - this.topspeed / 2, Math.random() * this.topspeed - this.topspeed / 2);
 
@@ -85,7 +85,7 @@ function Player(x, y, w, h) {
     Entity.call(this);
     this.position = new Vector2D(x, y);
     this.size = new Vector2D(w || 40, h || 60);
-    this.speed = 1;
+    this.speed = 200;
 }
 Player.prototype = Object.create(Entity.prototype);
 Player.prototype.constructor = Player;
@@ -150,12 +150,21 @@ function draw() {
     }
 }
 
+const STEP = 1 / 60;
 let last_time = performance.now();
+let accumulator = 0;
 // let simulate_lag_timer = 0;
-function gameRun(timestamp) {
-    requestAnimationFrame(gameRun);
-    const dt = timestamp - last_time;
-    last_time = timestamp;
+function gameLoop(current_time) {
+    requestAnimationFrame(gameLoop);
+    let dt = Math.min((current_time - last_time) / 1000, 0.1);
+    last_time = current_time;
+
+    accumulator += dt;
+
+    while (accumulator >= STEP) {
+        update(STEP);
+        accumulator -= STEP;
+    }
 
     // simulate_lag_timer++;
     // if (simulate_lag_timer > 500) {
@@ -164,7 +173,6 @@ function gameRun(timestamp) {
     //     print("whoops");
     // }
 
-    update(dt);
     draw();
 }
 
@@ -179,7 +187,7 @@ function main() {
         bullets.push(new Bullet(Math.random() * 300, Math.random() * 300));
     }
 
-    gameRun(performance.now());
+    gameLoop(performance.now());
 }
 
 window.addEventListener("keydown", e => {
