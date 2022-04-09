@@ -2,6 +2,7 @@ import Vector2D from "./math";
 
 const keys = {};
 let players = [];
+let bullets = [];
 let canvas;
 let ctx;
 
@@ -40,6 +41,44 @@ function Entity(x, y, w, h) {
 
 Entity.prototype.draw = function () {
     ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
+};
+
+function Bullet(x, y) {
+    Entity.call(this, x, y);
+    this.topspeed = 1;
+    this.diameter = 8;
+    this.speed = new Vector2D(Math.random() * this.topspeed - this.topspeed / 2, Math.random() * this.topspeed - this.topspeed / 2);
+
+}
+Bullet.prototype = Object.create(Entity.prototype);
+Bullet.prototype.constructor = Bullet;
+
+Bullet.prototype.update = function (dt) {
+    this.position.x += this.speed.x * dt;
+    this.position.y += this.speed.y * dt;
+
+    if (this.position.x + this.diameter > canvas._resolution.x) {
+        this.speed.x = -this.speed.x;
+        this.position.x = canvas._resolution.x - this.diameter;
+    } else if (this.position.x - this.diameter < 0) {
+        this.speed.x = -this.speed.x;
+        this.position.x = this.diameter;
+    }
+
+    if (this.position.y + this.diameter > canvas._resolution.y) {
+        this.speed.y = -this.speed.y;
+        this.position.y = canvas._resolution.y - this.diameter;
+    } else if (this.position.y - this.diameter < 0) {
+        this.speed.y = -this.speed.y;
+        this.position.y = this.diameter;
+    }
+};
+
+Bullet.prototype.draw = function () {
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, this.diameter, 0, 2 * Math.PI, false);
+    // ctx.fillStyle = 'black';
+    ctx.fill();
 };
 
 function Player(x, y, w, h) {
@@ -93,6 +132,10 @@ function update(dt) {
     for (let i = 0; i < players.length; i++) {
         players[i].update(dt);
     }
+
+    for (let i = 0; i < bullets.length; i++) {
+        bullets[i].update(dt);
+    }
 }
 
 function draw() {
@@ -100,6 +143,10 @@ function draw() {
 
     for (let i = 0; i < players.length; i++) {
         players[i].draw();
+    }
+
+    for (let i = 0; i < bullets.length; i++) {
+        bullets[i].draw();
     }
 }
 
@@ -127,6 +174,10 @@ function main() {
 
     let player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
     players.push(player);
+
+    for (let i = 0; i < 1000; i++) {
+        bullets.push(new Bullet(Math.random() * 300, Math.random() * 300));
+    }
 
     gameRun(performance.now());
 }
