@@ -23,7 +23,7 @@ function sleep(milliseconds) {
  */
 function GameCanvas(canvas) {
     this._canvas = canvas || null;
-    this._resolution = [640, 720];
+    this._resolution = new Vector2D(640, 720);
     this.setResolution();
 }
 
@@ -33,18 +33,13 @@ function GameCanvas(canvas) {
  * @param {Number} h
  */
 GameCanvas.prototype.setResolution = function (w, h) {
-    if (w) {
-        this._resolution[0] = w;
-    }
+    this._resolution.x = w || this._resolution.x;
+    this._resolution.y = h || this._resolution.y;
 
-    if (h) {
-        this._resolution[1] = h;
-    }
-
-    this._canvas.style.width = `${this._resolution[0]}px`;
-    this._canvas.style.height = `${this._resolution[1]}px`;
-    this._canvas.width = this._resolution[0];
-    this._canvas.height = this._resolution[1];
+    this._canvas.style.width = `${this._resolution.x}px`;
+    this._canvas.style.height = `${this._resolution.y}px`;
+    this._canvas.width = this._resolution.x;
+    this._canvas.height = this._resolution.y;
 };
 
 
@@ -80,9 +75,9 @@ Vector2D.prototype.normalize = function () {
     this.y /= magnitude;
 };
 
-function Player() {
-    this.position = new Vector2D();
-    this.size = new Vector2D(40, 60);
+function Player(x, y, w, h) {
+    this.position = new Vector2D(x, y);
+    this.size = new Vector2D(w || 40, h || 60);
     this.speed = 1;
 }
 
@@ -111,14 +106,14 @@ Player.prototype.update = function (dt) {
     this.position.x += this.speed * modifier * direction.x * dt;
     this.position.y += this.speed * modifier * direction.y * dt;
 
-    if (this.position.x + this.size.x > canvas._resolution[0]) {
-        this.position.x = canvas._resolution[0] - this.size.x;
+    if (this.position.x + this.size.x > canvas._resolution.x) {
+        this.position.x = canvas._resolution.x - this.size.x;
     } else if (this.position.x < 0) {
         this.position.x = 0;
     }
 
-    if (this.position.y + this.size.y > canvas._resolution[1]) {
-        this.position.y = canvas._resolution[1] - this.size.y;
+    if (this.position.y + this.size.y > canvas._resolution.y) {
+        this.position.y = canvas._resolution.y - this.size.y;
     } else if (this.position.y < 0) {
         this.position.y = 0;
     }
@@ -136,7 +131,7 @@ function update(dt) {
 }
 
 function draw() {
-    ctx.clearRect(0, 0, 640, 720);
+    ctx.clearRect(0, 0, canvas._resolution.x, canvas._resolution.y);
 
     for (let i = 0; i < players.length; i++) {
         players[i].draw();
@@ -163,9 +158,11 @@ function gameRun() {
 }
 
 function main() {
+    const player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
+    players.push(player);
+    
     canvas = new GameCanvas(document.getElementById("game-window"));
     ctx = canvas._canvas.getContext("2d");
-    players.push(new Player());
     window.setInterval(gameRun, 10);
 }
 
