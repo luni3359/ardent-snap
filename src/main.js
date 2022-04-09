@@ -88,24 +88,28 @@ function Player() {
 
 Player.prototype.update = function (dt) {
     const direction = new Vector2D();
-
-    if (keys["a"]) {
+    if (keys[65] || keys[37]) {
         direction.x -= 1;
     }
-    if (keys["d"]) {
+    if (keys[68] || keys[39]) {
         direction.x += 1;
     }
-    if (keys["w"]) {
+    if (keys[87] || keys[38]) {
         direction.y -= 1;
     }
-    if (keys["s"]) {
+    if (keys[83] || keys[40]) {
         direction.y += 1;
+    }
+
+    let modifier = 1;
+    if (keys[16]) {
+        modifier = 0.5;
     }
 
     direction.normalize();
 
-    this.position.x += this.speed * direction.x * dt;
-    this.position.y += this.speed * direction.y * dt;
+    this.position.x += this.speed * modifier * direction.x * dt;
+    this.position.y += this.speed * modifier * direction.y * dt;
 
     if (this.position.x + this.size.x > canvas._resolution[0]) {
         this.position.x = canvas._resolution[0] - this.size.x;
@@ -140,19 +144,19 @@ function draw() {
 }
 
 let last_time = performance.now();
-let simulate_lag_timer = 0;
+// let simulate_lag_timer = 0;
 function gameRun() {
     let current_time = performance.now();
     // print(`prev: ${last_time}, now: ${current_time}`);
     const dt = current_time - last_time;
     last_time = current_time;
 
-    simulate_lag_timer++;
-    if (simulate_lag_timer > 500) {
-        simulate_lag_timer = 0;
-        sleep(500);
-        print("whoops");
-    }
+    // simulate_lag_timer++;
+    // if (simulate_lag_timer > 500) {
+    //     simulate_lag_timer = 0;
+    //     sleep(500);
+    //     print("whoops");
+    // }
 
     update(dt);
     draw();
@@ -166,11 +170,11 @@ function main() {
 }
 
 window.addEventListener("keydown", e => {
-    keys[e.key] = true;
+    keys[e.keyCode] = true;
 });
 
 window.addEventListener("keyup", e => {
-    keys[e.key] = false;
+    keys[e.keyCode] = false;
 });
 
 window.addEventListener("load", () => { main(); });
