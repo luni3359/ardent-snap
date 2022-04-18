@@ -18,9 +18,26 @@ function sleep(milliseconds) {
     } while (currentDate - date < milliseconds);
 }
 
+function loadImage(url) {
+    return new Promise(resolve => {
+        const image = new Image();
+        image.addEventListener("load", () => {
+            print(`Loaded "${url}"`);
+            resolve(image);
+        });
+        image.src = url;
+    });
+}
+
+async function loadAssets() {
+    return await Promise.all([
+        await loadImage("https://www.spriters-resource.com/resources/sheets/142/145503.png?updated=1608620689")
+    ]);
+}
+
 function GameCanvas(canvas) {
     this._canvas = canvas || null;
-    this._resolution = new Vector2D(640, 720);
+    this._resolution = new Vector2D(640, 480);
     this.setResolution();
 }
 
@@ -40,6 +57,7 @@ function Entity(x, y, w, h) {
 }
 
 Entity.prototype.draw = function () {
+    ctx.fillStyle = "black";
     ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
 };
 
@@ -77,7 +95,7 @@ Bullet.prototype.update = function (dt) {
 Bullet.prototype.draw = function () {
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-    // ctx.fillStyle = 'black';
+    ctx.fillStyle = "magenta";
     ctx.fill();
 };
 
@@ -128,6 +146,11 @@ Player.prototype.update = function (dt) {
     }
 };
 
+Player.prototype.draw = function () {
+    ctx.fillStyle = "blue";
+    ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
+};
+
 function update(dt) {
     for (let i = 0; i < players.length; i++) {
         players[i].update(dt);
@@ -140,6 +163,7 @@ function update(dt) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas._resolution.x, canvas._resolution.y);
+    ctx.drawImage(background, 0, 0, canvas._resolution.x, canvas._resolution.y, 0, 0, canvas._resolution.x, canvas._resolution.y);
 
     for (let i = 0; i < players.length; i++) {
         players[i].draw();
@@ -149,6 +173,8 @@ function draw() {
         bullets[i].draw();
     }
 }
+
+let background;
 
 const STEP = 1 / 60;
 let last_time = performance.now();
@@ -176,10 +202,12 @@ function gameLoop(current_time) {
     draw();
 }
 
-function main() {
+async function main() {
     canvas = new GameCanvas(document.getElementById("game-window"));
     ctx = canvas._canvas.getContext("2d");
 
+    [background] = await loadAssets();
+    print(toType(background))
     let player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
     players.push(player);
 
@@ -188,6 +216,12 @@ function main() {
     }
 
     gameLoop(performance.now());
+}
+
+// Determines the true type of a variable
+const toType = (param) => {
+    if (param === NaN) return 'NaN';
+    else return Object.prototype.toString.call(param).replace('[object ', '').slice(0, -1).toLowerCase();
 }
 
 window.addEventListener("keydown", e => {
