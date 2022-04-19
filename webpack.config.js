@@ -1,14 +1,15 @@
 const path = require("path");
 
-let output_path = path.resolve(__dirname, "dist");
+const OUTPUT_PATH = path.resolve(__dirname, "dist");
 
 module.exports = {
     mode: "development",
 
     entry: "./src/main.js",
     output: {
-        path: output_path,
         filename: "main.js",
+        path: OUTPUT_PATH,
+        assetModuleFilename: "img/[name][ext]"
     },
 
     module: {
@@ -21,6 +22,10 @@ module.exports = {
                     "postcss-loader",
                     "sass-loader",
                 ]
+            },
+            {
+                test: /\.(jpe?g|png|gif|svg)$/i,
+                type: "asset/resource"
             }
         ]
     },
@@ -30,7 +35,7 @@ module.exports = {
         hot: false,
         port: 8080,
         static: {
-            directory: output_path,
+            directory: OUTPUT_PATH,
         },
     },
 };
