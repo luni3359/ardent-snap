@@ -2,12 +2,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "firefox",
+            "name": "Launch Chrome",
             "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "name": "Launch Firefox",
+            "request": "launch",
+            "type": "firefox",
             "reAttach": true,
-            "name": "Launch localhost",
             "url": "http://localhost:8080/index.html",
-            "webRoot": "${workspaceFolder}/dist"
+            "webRoot": "${workspaceFolder}/dist",
+            "pathMappings": [
+                {
+                    "url": "webpack://ardent-snap/dist/main.js.map",
+                    "path": "${workspaceFolder}/src/main.js"
+                }
+            ]
         }
     ]
 }
