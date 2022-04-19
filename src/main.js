@@ -12,121 +12,125 @@ let bullets = [];
 let canvas;
 let ctx;
 
-function GameCanvas(canvas) {
-    this._canvas = canvas || null;
-    this._resolution = new Vector2D(640, 480);
-    this.setResolution();
+class GameCanvas {
+    constructor(canvas) {
+        this._canvas = canvas || null;
+        this._resolution = new Vector2D(640, 480);
+        this.setResolution();
+    }
+
+    setResolution(w, h) {
+        this._resolution.x = w || this._resolution.x;
+        this._resolution.y = h || this._resolution.y;
+
+        this._canvas.style.width = `${this._resolution.x}px`;
+        this._canvas.style.height = `${this._resolution.y}px`;
+        this._canvas.width = this._resolution.x;
+        this._canvas.height = this._resolution.y;
+    }
 }
 
-GameCanvas.prototype.setResolution = function (w, h) {
-    this._resolution.x = w || this._resolution.x;
-    this._resolution.y = h || this._resolution.y;
+class Entity {
+    constructor(x, y, w, h) {
+        this.position = new Vector2D(x, y);
+        this.size = new Vector2D(w, h);
+    }
 
-    this._canvas.style.width = `${this._resolution.x}px`;
-    this._canvas.style.height = `${this._resolution.y}px`;
-    this._canvas.width = this._resolution.x;
-    this._canvas.height = this._resolution.y;
-};
-
-function Entity(x, y, w, h) {
-    this.position = new Vector2D(x, y);
-    this.size = new Vector2D(w, h);
+    draw() {
+        ctx.fillStyle = "black";
+        ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
+    }
 }
 
-Entity.prototype.draw = function () {
-    ctx.fillStyle = "black";
-    ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
-};
+class Bullet extends Entity {
+    constructor(x, y) {
+        super(x, y);
+        this.topspeed = 500;
+        this.radius = 8;
+        this.speed = new Vector2D(Math.random() * this.topspeed - this.topspeed / 2, Math.random() * this.topspeed - this.topspeed / 2);
+    }
 
-function Bullet(x, y) {
-    Entity.call(this, x, y);
-    this.topspeed = 500;
-    this.radius = 8;
-    this.speed = new Vector2D(Math.random() * this.topspeed - this.topspeed / 2, Math.random() * this.topspeed - this.topspeed / 2);
+    update(dt) {
+        this.position.x += this.speed.x * dt;
+        this.position.y += this.speed.y * dt;
 
+        if (this.position.x + this.radius > canvas._resolution.x) {
+            this.speed.x = -this.speed.x;
+            this.position.x = canvas._resolution.x - this.radius;
+        } else if (this.position.x - this.radius < 0) {
+            this.speed.x = -this.speed.x;
+            this.position.x = this.radius;
+        }
+
+        if (this.position.y + this.radius > canvas._resolution.y) {
+            this.speed.y = -this.speed.y;
+            this.position.y = canvas._resolution.y - this.radius;
+        } else if (this.position.y - this.radius < 0) {
+            this.speed.y = -this.speed.y;
+            this.position.y = this.radius;
+        }
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
+        ctx.fillStyle = "magenta";
+        ctx.fill();
+    }
 }
-Bullet.prototype = Object.create(Entity.prototype);
-Bullet.prototype.constructor = Bullet;
 
-Bullet.prototype.update = function (dt) {
-    this.position.x += this.speed.x * dt;
-    this.position.y += this.speed.y * dt;
-
-    if (this.position.x + this.radius > canvas._resolution.x) {
-        this.speed.x = -this.speed.x;
-        this.position.x = canvas._resolution.x - this.radius;
-    } else if (this.position.x - this.radius < 0) {
-        this.speed.x = -this.speed.x;
-        this.position.x = this.radius;
+class Player extends Entity {
+    constructor(x, y, w, h) {
+        super();
+        this.position = new Vector2D(x, y);
+        this.size = new Vector2D(w || 40, h || 60);
+        this.speed = 200;
     }
 
-    if (this.position.y + this.radius > canvas._resolution.y) {
-        this.speed.y = -this.speed.y;
-        this.position.y = canvas._resolution.y - this.radius;
-    } else if (this.position.y - this.radius < 0) {
-        this.speed.y = -this.speed.y;
-        this.position.y = this.radius;
+    update(dt) {
+        const direction = new Vector2D();
+        if (keys[65] || keys[37]) {
+            direction.x -= 1;
+        }
+        if (keys[68] || keys[39]) {
+            direction.x += 1;
+        }
+        if (keys[87] || keys[38]) {
+            direction.y -= 1;
+        }
+        if (keys[83] || keys[40]) {
+            direction.y += 1;
+        }
+
+        let modifier = 1;
+        if (keys[16]) {
+            modifier = 0.5;
+        }
+
+        direction.normalize();
+
+        this.position.x += this.speed * modifier * direction.x * dt;
+        this.position.y += this.speed * modifier * direction.y * dt;
+
+        if (this.position.x + this.size.x > canvas._resolution.x) {
+            this.position.x = canvas._resolution.x - this.size.x;
+        } else if (this.position.x < 0) {
+            this.position.x = 0;
+        }
+
+        if (this.position.y + this.size.y > canvas._resolution.y) {
+            this.position.y = canvas._resolution.y - this.size.y;
+        } else if (this.position.y < 0) {
+            this.position.y = 0;
+        }
     }
-};
 
-Bullet.prototype.draw = function () {
-    ctx.beginPath();
-    ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = "magenta";
-    ctx.fill();
-};
-
-function Player(x, y, w, h) {
-    Entity.call(this);
-    this.position = new Vector2D(x, y);
-    this.size = new Vector2D(w || 40, h || 60);
-    this.speed = 200;
+    draw() {
+        ctx.fillStyle = "blue";
+        ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
+    }
 }
-Player.prototype = Object.create(Entity.prototype);
-Player.prototype.constructor = Player;
 
-Player.prototype.update = function (dt) {
-    const direction = new Vector2D();
-    if (keys[65] || keys[37]) {
-        direction.x -= 1;
-    }
-    if (keys[68] || keys[39]) {
-        direction.x += 1;
-    }
-    if (keys[87] || keys[38]) {
-        direction.y -= 1;
-    }
-    if (keys[83] || keys[40]) {
-        direction.y += 1;
-    }
-
-    let modifier = 1;
-    if (keys[16]) {
-        modifier = 0.5;
-    }
-
-    direction.normalize();
-
-    this.position.x += this.speed * modifier * direction.x * dt;
-    this.position.y += this.speed * modifier * direction.y * dt;
-
-    if (this.position.x + this.size.x > canvas._resolution.x) {
-        this.position.x = canvas._resolution.x - this.size.x;
-    } else if (this.position.x < 0) {
-        this.position.x = 0;
-    }
-
-    if (this.position.y + this.size.y > canvas._resolution.y) {
-        this.position.y = canvas._resolution.y - this.size.y;
-    } else if (this.position.y < 0) {
-        this.position.y = 0;
-    }
-};
-
-Player.prototype.draw = function () {
-    ctx.fillStyle = "blue";
-    ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
-};
 
 function update(dt) {
     for (let i = 0; i < players.length; i++) {
