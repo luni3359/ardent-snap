@@ -1,5 +1,5 @@
 import Vector2D from "./math";
-import { loadInitAssets } from "./media";
+import { loadAssets, loadInitAssets } from "./media";
 import { print, sleep } from "./utils";
 
 
@@ -89,21 +89,23 @@ class Player extends Entity {
 
     update(dt) {
         const direction = new Vector2D();
-        if (keys[65] || keys[37]) {
+        if (keys["KeyA"] || keys["ArrowLeft"]) {
             direction.x -= 1;
         }
-        if (keys[68] || keys[39]) {
+        if (keys["KeyD"] || keys["ArrowRight"]) {
             direction.x += 1;
         }
-        if (keys[87] || keys[38]) {
+
+        if (keys["KeyW"] || keys["ArrowUp"]) {
             direction.y -= 1;
         }
-        if (keys[83] || keys[40]) {
+
+        if (keys["KeyS"] || keys["ArrowDown"]) {
             direction.y += 1;
         }
 
         let modifier = 1;
-        if (keys[16]) {
+        if (keys["ShiftLeft"]) {
             modifier = 0.5;
         }
 
@@ -142,20 +144,100 @@ function update(dt) {
     }
 }
 
+function draw_loading_screen() {
+    const lsc = data['loading-screen'];
+    const lgw = data['loading-girls-waiting'];
+    const lnl = data['loading-now-loading'];
+
+    // background
+    ctx.drawImage(menus, lsc.x, lsc.y, lsc.w, lsc.h, 0, 0, canvas._resolution.x, canvas._resolution.y);
+    // girls waiting
+    ctx.drawImage(menus, lgw.x, lgw.y, lgw.w, lgw.h, 416, 368, 125, 45);
+    // now loading
+    ctx.drawImage(menus, lnl.x, lnl.y, lnl.w, lnl.h, 474, 394, 125, 30);
+}
+
+function draw_hud() {
+    const hudR = data['hud-background-right'];
+    const hudL = data['hud-background-left'];
+    const hudT = data['hud-background-top'];
+    const hudB = data['hud-background-bottom'];
+
+    // right piece
+    ctx.drawImage(hud, hudR.x, hudR.y, hudR.w, hudR.h, canvas._resolution.x - hudR.w, 0, hudR.w, hudR.h);
+    // left piece
+    ctx.drawImage(hud, hudL.x, hudL.y, hudL.w, hudL.h, 0, 0, hudL.w, hudL.h);
+    // top piece
+    ctx.drawImage(hud, hudT.x, hudT.y, hudT.w, hudT.h, hudL.w, 0, hudT.w, hudT.h);
+    // bottom piece
+    ctx.drawImage(hud, hudB.x, hudB.y, hudB.w, hudB.h, hudL.w, canvas._resolution.y - hudB.h, hudB.w, hudB.h);
+}
+
+function draw_grid() {
+    const grid_size = new Vector2D(40, 30);
+    const square_size = 16;
+    const line_offset = 0.5;
+
+    ctx.fillStyle = "red";
+    ctx.fillRect(255, 200, square_size, square_size);
+
+    ctx.setLineDash([4, 4]);
+    ctx.translate(line_offset, line_offset);
+    for (let i = 0; i < grid_size.x; i++) {
+        for (let j = 0; j < grid_size.y; j++) {
+            const x = i * square_size;
+            const y = j * square_size;
+
+            ctx.strokeStyle = "black";
+            ctx.beginPath();
+            ctx.moveTo(x + square_size, y + square_size);
+            ctx.lineTo(x + square_size, y);
+            ctx.lineTo(x, y);
+            ctx.moveTo(x + square_size, y + square_size);
+            ctx.lineTo(x, y + square_size);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            if (i == 0 || i == grid_size.x - 1 || j == 0 || j == grid_size.y - 1)
+                ctx.strokeStyle = "yellow";
+            else
+                ctx.strokeStyle = "white";
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + square_size, y);
+            ctx.lineTo(x + square_size, y + square_size);
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + square_size);
+            ctx.lineTo(x + square_size, y + square_size);
+            ctx.stroke();
+        }
+    }
+
+    ctx.translate(-line_offset, -line_offset);
+}
+
 function draw() {
     ctx.clearRect(0, 0, canvas._resolution.x, canvas._resolution.y);
-    ctx.drawImage(menus, 1240, 48, canvas._resolution.x, canvas._resolution.y, 0, 0, canvas._resolution.x, canvas._resolution.y);
+
+    draw_loading_screen();
+
+    // ctx.fillStyle = "magenta";
+    // ctx.fillRect(32, 16, 16 * 24, 16 * 28);
 
     for (let i = 0; i < players.length; i++) {
         players[i].draw();
     }
+
+    draw_hud();
+
+    draw_grid();
 
     for (let i = 0; i < bullets.length; i++) {
         bullets[i].draw();
     }
 }
 
-let menus;
+let data, menus, hud;
 
 const STEP = 1 / 60;
 let last_time = performance.now();
@@ -189,24 +271,24 @@ async function main() {
     canvas = new GameCanvas(document.getElementById("game-window"));
     ctx = canvas._canvas.getContext("2d");
 
-    [menus] = await loadInitAssets();
-    let player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
-    players.push(player);
+    [data, menus] = await loadInitAssets();
 
-    for (let i = 0; i < 5; i++) {
-        bullets.push(new Bullet(Math.random() * 300, Math.random() * 300));
-    }
+    [hud] = await loadAssets();
+
+    let player = new Player(200, 350);
+    players.push(player);
 
     gameLoop(performance.now());
 }
 
 
 window.addEventListener("keydown", e => {
-    keys[e.keyCode] = true;
+    // e.preventDefault();
+    keys[e.code] = true;
 });
 
 window.addEventListener("keyup", e => {
-    keys[e.keyCode] = false;
+    keys[e.code] = false;
 });
 
 window.addEventListener("load", () => { main(); });

@@ -1,4 +1,6 @@
+import hud from "./assets/sprites/hud.png";
 import menus from "./assets/sprites/menus.png";
+import data from "./assets/sprites/spriteInfo.json";
 import { print } from "./utils";
 
 export function loadImage(url) {
@@ -13,11 +15,11 @@ export function loadImage(url) {
 }
 
 export async function loadInitAssets() {
-    return [await loadImage(menus)];
+    return [data, await loadImage(menus)];
 }
 
 export async function loadAssets() {
     return await Promise.all([
-        await loadImage("https://www.spriters-resource.com/resources/sheets/142/145503.png?updated=1608620689")
+        await loadImage(hud)
     ]);
 }
