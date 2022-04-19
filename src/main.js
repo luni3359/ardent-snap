@@ -1,6 +1,6 @@
 import Vector2D from "./math";
-import { loadAssets } from "./media";
-import { print, sleep, toType } from "./utils";
+import { loadInitAssets } from "./media";
+import { print, sleep } from "./utils";
 
 
 let fake_lag_timer = 0;
@@ -140,7 +140,7 @@ function update(dt) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas._resolution.x, canvas._resolution.y);
-    ctx.drawImage(background, 0, 0, canvas._resolution.x, canvas._resolution.y, 0, 0, canvas._resolution.x, canvas._resolution.y);
+    ctx.drawImage(menus, 1240, 48, canvas._resolution.x, canvas._resolution.y, 0, 0, canvas._resolution.x, canvas._resolution.y);
 
     for (let i = 0; i < players.length; i++) {
         players[i].draw();
@@ -151,7 +151,7 @@ function draw() {
     }
 }
 
-let background;
+let menus;
 
 const STEP = 1 / 60;
 let last_time = performance.now();
@@ -185,8 +185,7 @@ async function main() {
     canvas = new GameCanvas(document.getElementById("game-window"));
     ctx = canvas._canvas.getContext("2d");
 
-    [background] = await loadAssets();
-    print(toType(background))
+    [menus] = await loadInitAssets();
     let player = new Player(canvas._canvas.width / 2, canvas._canvas.height / 2);
     players.push(player);
 

@@ -1,3 +1,4 @@
+import menus from "./assets/sprites/menus.png";
 import { print } from "./utils";
 
 export function loadImage(url) {
@@ -9,6 +10,10 @@ export function loadImage(url) {
         });
         image.src = url;
     });
+}
+
+export async function loadInitAssets() {
+    return [await loadImage(menus)];
 }
 
 export async function loadAssets() {
