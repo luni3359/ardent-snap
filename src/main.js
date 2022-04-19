@@ -1,39 +1,16 @@
 import Vector2D from "./math";
+import { loadAssets } from "./media";
+import { print, sleep, toType } from "./utils";
+
+
+let fake_lag_timer = 0;
+let fake_lag_enabled = false;
 
 const keys = {};
 let players = [];
 let bullets = [];
 let canvas;
 let ctx;
-
-function print(...args) {
-    console.log(...args);
-}
-
-function sleep(milliseconds) {
-    const date = Date.now();
-    let currentDate = null;
-    do {
-        currentDate = Date.now();
-    } while (currentDate - date < milliseconds);
-}
-
-function loadImage(url) {
-    return new Promise(resolve => {
-        const image = new Image();
-        image.addEventListener("load", () => {
-            print(`Loaded "${url}"`);
-            resolve(image);
-        });
-        image.src = url;
-    });
-}
-
-async function loadAssets() {
-    return await Promise.all([
-        await loadImage("https://www.spriters-resource.com/resources/sheets/142/145503.png?updated=1608620689")
-    ]);
-}
 
 function GameCanvas(canvas) {
     this._canvas = canvas || null;
@@ -179,7 +156,7 @@ let background;
 const STEP = 1 / 60;
 let last_time = performance.now();
 let accumulator = 0;
-// let simulate_lag_timer = 0;
+
 function gameLoop(current_time) {
     requestAnimationFrame(gameLoop);
     let dt = Math.min((current_time - last_time) / 1000, 0.1);
@@ -192,12 +169,14 @@ function gameLoop(current_time) {
         accumulator -= STEP;
     }
 
-    // simulate_lag_timer++;
-    // if (simulate_lag_timer > 500) {
-    //     simulate_lag_timer = 0;
-    //     sleep(500);
-    //     print("whoops");
-    // }
+    if (fake_lag_enabled) {
+        fake_lag_timer++;
+        if (fake_lag_timer > 500) {
+            fake_lag_timer = 0;
+            sleep(500);
+            print("whoops");
+        }
+    }
 
     draw();
 }
@@ -218,11 +197,6 @@ async function main() {
     gameLoop(performance.now());
 }
 
-// Determines the true type of a variable
-const toType = (param) => {
-    if (param === NaN) return 'NaN';
-    else return Object.prototype.toString.call(param).replace('[object ', '').slice(0, -1).toLowerCase();
-}
 
 window.addEventListener("keydown", e => {
     keys[e.keyCode] = true;
