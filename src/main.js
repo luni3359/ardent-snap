@@ -83,8 +83,8 @@ class Player extends Entity {
     constructor(x, y, w, h) {
         super();
         this.position = new Vector2D(x, y);
-        this.size = new Vector2D(w || 40, h || 60);
-        this.speed = 200;
+        this.size = new Vector2D(w || 32, h || 48);
+        this.speed = 255;
     }
 
     update(dt) {
@@ -232,10 +232,10 @@ function draw_grid() {
 function draw() {
     ctx.clearRect(0, 0, canvas._resolution.x, canvas._resolution.y);
 
-    draw_loading_screen();
+    // draw_loading_screen();
 
-    // ctx.fillStyle = "magenta";
-    // ctx.fillRect(32, 16, 16 * 24, 16 * 28);
+    ctx.fillStyle = "#555";
+    ctx.fillRect(32, 16, 16 * 24, 16 * 28);
 
     for (let i = 0; i < players.length; i++) {
         players[i].draw();
