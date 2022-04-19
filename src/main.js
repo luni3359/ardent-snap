@@ -178,40 +178,53 @@ function draw_grid() {
     const square_size = 16;
     const line_offset = 0.5;
 
-    ctx.fillStyle = "red";
-    ctx.fillRect(255, 200, square_size, square_size);
-
     ctx.setLineDash([4, 4]);
     ctx.translate(line_offset, line_offset);
+
+    // draw vertical lines
     for (let i = 0; i < grid_size.x; i++) {
-        for (let j = 0; j < grid_size.y; j++) {
-            const x = i * square_size;
-            const y = j * square_size;
+        const x = i * square_size;
+        const y = grid_size.y * square_size;
 
-            ctx.strokeStyle = "black";
-            ctx.beginPath();
-            ctx.moveTo(x + square_size, y + square_size);
-            ctx.lineTo(x + square_size, y);
-            ctx.lineTo(x, y);
-            ctx.moveTo(x + square_size, y + square_size);
-            ctx.lineTo(x, y + square_size);
-            ctx.lineTo(x, y);
-            ctx.stroke();
-
-            if (i == 0 || i == grid_size.x - 1 || j == 0 || j == grid_size.y - 1)
-                ctx.strokeStyle = "yellow";
-            else
-                ctx.strokeStyle = "white";
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + square_size, y);
-            ctx.lineTo(x + square_size, y + square_size);
-            ctx.moveTo(x, y);
-            ctx.lineTo(x, y + square_size);
-            ctx.lineTo(x + square_size, y + square_size);
-            ctx.stroke();
-        }
+        ctx.strokeStyle = "white";
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, 0);
+        ctx.stroke();
     }
+
+    // draw horizontal lines
+    for (let i = 0; i < grid_size.y; i++) {
+        const x = grid_size.x * square_size;
+        const y = i * square_size;
+
+        ctx.strokeStyle = "white";
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(0, y);
+        ctx.stroke();
+    }
+
+    // draw gold frame
+    ctx.strokeStyle = "yellow";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(grid_size.x * square_size, 0);
+    ctx.lineTo(grid_size.x * square_size, grid_size.y * square_size);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, grid_size.y * square_size);
+    ctx.lineTo(grid_size.x * square_size, grid_size.y * square_size);
+    ctx.stroke();
 
     ctx.translate(-line_offset, -line_offset);
 }
