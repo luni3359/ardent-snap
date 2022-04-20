@@ -38,7 +38,7 @@ class Entity {
         this.size = new Vector2D(w, h);
     }
 
-    draw() {
+    draw(ctx) {
         ctx.fillStyle = "black";
         ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
     }
@@ -73,7 +73,7 @@ class Bullet extends Entity {
         }
     }
 
-    draw() {
+    draw(ctx) {
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
         ctx.fillStyle = "magenta";
@@ -148,7 +148,7 @@ class Player extends Entity {
         }
     }
 
-    draw() {
+    draw(ctx) {
         const int_x = Math.ceil(this.position.x);
         const int_y = Math.ceil(this.position.y);
         let offset_x = 16;
@@ -205,7 +205,7 @@ function update(dt) {
     }
 }
 
-function draw_loading_screen() {
+function draw_loading_screen(ctx) {
     const lsc = data['loading-screen'];
     const lgw = data['loading-girls-waiting'];
     const lnl = data['loading-now-loading'];
@@ -218,7 +218,7 @@ function draw_loading_screen() {
     ctx.drawImage(menus, lnl.x, lnl.y, lnl.w, lnl.h, 474, 394, 125, 30);
 }
 
-function draw_hud() {
+function draw_hud(ctx) {
     const hudR = data['hud-background-right'];
     const hudL = data['hud-background-left'];
     const hudT = data['hud-background-top'];
@@ -234,7 +234,7 @@ function draw_hud() {
     ctx.drawImage(hud, hudB.x, hudB.y, hudB.w, hudB.h, hudL.w, canvas._resolution.y - hudB.h, hudB.w, hudB.h);
 }
 
-function draw_grid() {
+function draw_grid(ctx) {
     const grid_size = new Vector2D(40, 30);
     const square_size = 16;
     const line_offset = 0.5;
@@ -292,7 +292,7 @@ function draw_grid() {
     ctx.translate(-line_offset, -line_offset);
 }
 
-function draw_temp_fps() {
+function draw_temp_fps(ctx) {
     ctx.font = "30px Arial";
     ctx.fillStyle = "white";
     ctx.textAlign = "right";
@@ -300,7 +300,7 @@ function draw_temp_fps() {
     ctx.fillText(`${fps_number}fps`, 412, 456);
 }
 
-function draw() {
+function draw(ctx) {
     ctx.clearRect(0, 0, canvas._resolution.x, canvas._resolution.y);
 
     // draw_loading_screen();
@@ -309,17 +309,17 @@ function draw() {
     ctx.fillRect(32, 16, 16 * 24, 16 * 28);
 
     for (let i = 0; i < players.length; i++) {
-        players[i].draw();
+        players[i].draw(ctx);
     }
 
-    draw_hud();
+    draw_hud(ctx);
 
-    draw_grid();
+    draw_grid(ctx);
 
-    draw_temp_fps();
+    draw_temp_fps(ctx);
 
     for (let i = 0; i < bullets.length; i++) {
-        bullets[i].draw();
+        bullets[i].draw(ctx);
     }
 }
 
@@ -351,7 +351,7 @@ function gameLoop(current_time) {
         }
     }
 
-    draw();
+    draw(ctx);
 }
 
 async function main() {
