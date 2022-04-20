@@ -83,7 +83,7 @@ class Ardent {
         }
 
         draw_hud(ctx);
-        // draw_grid(ctx);
+        draw_grid(ctx);
         draw_temp_fps(ctx);
     };
 
@@ -388,7 +388,7 @@ function draw_grid(ctx) {
     const ctx_c = grid_cache.getContext("2d");
 
     ctx_c.setLineDash([4, 4]);
-    ctx_c.translate(line_offset, line_offset);
+    ctx_c.setTransform(1, 0, 0, 1, line_offset, line_offset);
 
     // draw vertical lines
     for (let i = 0; i < grid_size.x; i++) {
@@ -437,7 +437,6 @@ function draw_grid(ctx) {
     ctx_c.lineTo(grid_size.x * square_size, grid_size.y * square_size - 1);
     ctx_c.stroke();
 
-    ctx_c.translate(-line_offset, -line_offset);
     ctx.drawImage(grid_cache, 0, 0);
 }
 
