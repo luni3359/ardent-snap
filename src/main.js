@@ -11,24 +11,27 @@ let fake_lag_enabled = false;
 const keys = {};
 let players = [];
 let bullets = [];
-let canvas;
+let game;
 let ctx;
 
-class GameCanvas {
+let grid_cache = null;
+let hud_cache = null;
+
+class Ardent {
     constructor(canvas) {
-        this._canvas = canvas || null;
-        this._resolution = new Vector2D(640, 480);
+        this.canvas = canvas || null;
+        this.resolution = new Vector2D(640, 480);
         this.setResolution();
     }
 
     setResolution(w, h) {
-        this._resolution.x = w || this._resolution.x;
-        this._resolution.y = h || this._resolution.y;
+        this.resolution.x = w || this.resolution.x;
+        this.resolution.y = h || this.resolution.y;
 
-        this._canvas.style.width = `${this._resolution.x}px`;
-        this._canvas.style.height = `${this._resolution.y}px`;
-        this._canvas.width = this._resolution.x;
-        this._canvas.height = this._resolution.y;
+        this.canvas.style.width = `${this.resolution.x}px`;
+        this.canvas.style.height = `${this.resolution.y}px`;
+        this.canvas.width = this.resolution.x;
+        this.canvas.height = this.resolution.y;
     }
 }
 
@@ -56,17 +59,17 @@ class Bullet extends Entity {
         this.position.x += this.speed.x * dt;
         this.position.y += this.speed.y * dt;
 
-        if (this.position.x + this.radius > canvas._resolution.x) {
+        if (this.position.x + this.radius > game.resolution.x) {
             this.speed.x = -this.speed.x;
-            this.position.x = canvas._resolution.x - this.radius;
+            this.position.x = game.resolution.x - this.radius;
         } else if (this.position.x - this.radius < 0) {
             this.speed.x = -this.speed.x;
             this.position.x = this.radius;
         }
 
-        if (this.position.y + this.radius > canvas._resolution.y) {
+        if (this.position.y + this.radius > game.resolution.y) {
             this.speed.y = -this.speed.y;
-            this.position.y = canvas._resolution.y - this.radius;
+            this.position.y = game.resolution.y - this.radius;
         } else if (this.position.y - this.radius < 0) {
             this.speed.y = -this.speed.y;
             this.position.y = this.radius;
@@ -149,24 +152,18 @@ class Player extends Entity {
     }
 
     draw(ctx) {
-        const int_x = Math.ceil(this.position.x);
-        const int_y = Math.ceil(this.position.y);
-        let offset_x = 16;
-        let offset_y = 16;
-        let w = 32;
-        let h = 48;
-        let frame_i = Math.floor(this.frame);
-        print(frame_i);
+        const character = data['reimu']['data'];
+        const int_x = Math.floor(this.position.x);
+        const int_y = Math.floor(this.position.y);
+        const frame_i = Math.floor(this.frame);
 
         if (frame_i == 0)
             ctx.fillStyle = "cyan";
         else
             ctx.fillStyle = "blue";
 
-        // ctx.fillRect(int_x, int_y, this.size.x, this.size.y);
-        ctx.fillRect(int_x, int_y, w, h);
-        // ctx.drawImage(characters, 10, 10, 45, 60, int_x, int_y, this.size.x, this.size.y);
-        ctx.drawImage(characters, offset_x + w * frame_i, offset_y, w, h, int_x, int_y, w, h);
+        ctx.fillRect(int_x, int_y, character.w, character.h);
+        ctx.drawImage(characters, character.x + character.w * frame_i, character.y, character.w, character.h, int_x, int_y, character.w, character.h);
 
         this.frame += 0.1;
 
@@ -176,8 +173,8 @@ class Player extends Entity {
 
         if (this.slow) {
             const size = 64;
-            const x = int_x - size / 2 + w / 2;
-            const y = int_y - size / 2 + h / 2;
+            const x = int_x - size / 2 + character.w / 2;
+            const y = int_y - size / 2 + character.h / 2;
             ctx.save();
             ctx.rotate(this.focus_frame);
             ctx.fillStyle = "#00000055";
@@ -211,7 +208,7 @@ function draw_loading_screen(ctx) {
     const lnl = data['loading-now-loading'];
 
     // background
-    ctx.drawImage(menus, lsc.x, lsc.y, lsc.w, lsc.h, 0, 0, canvas._resolution.x, canvas._resolution.y);
+    ctx.drawImage(menus, lsc.x, lsc.y, lsc.w, lsc.h, 0, 0, game.resolution.x, game.resolution.y);
     // girls waiting
     ctx.drawImage(menus, lgw.x, lgw.y, lgw.w, lgw.h, 416, 368, 125, 45);
     // now loading
@@ -219,44 +216,66 @@ function draw_loading_screen(ctx) {
 }
 
 function draw_hud(ctx) {
+    if (hud_cache) {
+        ctx.drawImage(hud_cache, 0, 0);
+        return;
+    }
+
+    hud_cache = document.createElement("canvas");
+    hud_cache.width = game.canvas.width;
+    hud_cache.height = game.canvas.height;
+
     const hudR = data['hud-background-right'];
     const hudL = data['hud-background-left'];
     const hudT = data['hud-background-top'];
     const hudB = data['hud-background-bottom'];
+    const ctx_c = hud_cache.getContext("2d");
 
     // right piece
-    ctx.drawImage(hud, hudR.x, hudR.y, hudR.w, hudR.h, canvas._resolution.x - hudR.w, 0, hudR.w, hudR.h);
+    ctx_c.drawImage(hud, hudR.x, hudR.y, hudR.w, hudR.h, game.resolution.x - hudR.w, 0, hudR.w, hudR.h);
     // left piece
-    ctx.drawImage(hud, hudL.x, hudL.y, hudL.w, hudL.h, 0, 0, hudL.w, hudL.h);
+    ctx_c.drawImage(hud, hudL.x, hudL.y, hudL.w, hudL.h, 0, 0, hudL.w, hudL.h);
     // top piece
-    ctx.drawImage(hud, hudT.x, hudT.y, hudT.w, hudT.h, hudL.w, 0, hudT.w, hudT.h);
+    ctx_c.drawImage(hud, hudT.x, hudT.y, hudT.w, hudT.h, hudL.w, 0, hudT.w, hudT.h);
     // bottom piece
-    ctx.drawImage(hud, hudB.x, hudB.y, hudB.w, hudB.h, hudL.w, canvas._resolution.y - hudB.h, hudB.w, hudB.h);
+    ctx_c.drawImage(hud, hudB.x, hudB.y, hudB.w, hudB.h, hudL.w, game.resolution.y - hudB.h, hudB.w, hudB.h);
+
+    ctx.drawImage(hud_cache, 0, 0);
 }
 
 function draw_grid(ctx) {
+    if (grid_cache) {
+        ctx.drawImage(grid_cache, 0, 0);
+        return;
+    }
+
+    grid_cache = document.createElement("canvas");
     const grid_size = new Vector2D(40, 30);
     const square_size = 16;
     const line_offset = 0.5;
 
-    ctx.setLineDash([4, 4]);
-    ctx.translate(line_offset, line_offset);
+    grid_cache.width = grid_size.x * square_size;
+    grid_cache.height = grid_size.y * square_size;
+    const ctx_c = grid_cache.getContext("2d");
+
+    ctx_c.setLineDash([4, 4]);
+    ctx_c.translate(line_offset, line_offset);
 
     // draw vertical lines
     for (let i = 0; i < grid_size.x; i++) {
         const x = i * square_size;
         const y = grid_size.y * square_size;
 
-        ctx.strokeStyle = "white";
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.strokeStyle = "black";
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x, 0);
-        ctx.stroke();
+        ctx_c.strokeStyle = "white";
+        ctx_c.beginPath();
+        ctx_c.moveTo(x, 0);
+        ctx_c.lineTo(x, y);
+        ctx_c.stroke();
+        ctx_c.strokeStyle = "black";
+        ctx_c.beginPath();
+        ctx_c.moveTo(x, y);
+        ctx_c.lineTo(x, 0);
+        ctx_c.stroke();
     }
 
     // draw horizontal lines
@@ -264,46 +283,48 @@ function draw_grid(ctx) {
         const x = grid_size.x * square_size;
         const y = i * square_size;
 
-        ctx.strokeStyle = "white";
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.strokeStyle = "black";
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(0, y);
-        ctx.stroke();
+        ctx_c.strokeStyle = "white";
+        ctx_c.beginPath();
+        ctx_c.moveTo(0, y);
+        ctx_c.lineTo(x, y);
+        ctx_c.stroke();
+        ctx_c.strokeStyle = "black";
+        ctx_c.beginPath();
+        ctx_c.moveTo(x, y);
+        ctx_c.lineTo(0, y);
+        ctx_c.stroke();
     }
 
     // draw gold frame
-    ctx.strokeStyle = "yellow";
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(grid_size.x * square_size, 0);
-    ctx.moveTo(grid_size.x * square_size - 1, 0);
-    ctx.lineTo(grid_size.x * square_size - 1, grid_size.y * square_size);
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, grid_size.y * square_size);
-    ctx.moveTo(0, grid_size.y * square_size - 1);
-    ctx.lineTo(grid_size.x * square_size, grid_size.y * square_size - 1);
-    ctx.stroke();
+    ctx_c.strokeStyle = "yellow";
+    ctx_c.beginPath();
+    ctx_c.moveTo(0, 0);
+    ctx_c.lineTo(grid_size.x * square_size, 0);
+    ctx_c.moveTo(grid_size.x * square_size - 1, 0);
+    ctx_c.lineTo(grid_size.x * square_size - 1, grid_size.y * square_size);
+    ctx_c.moveTo(0, 0);
+    ctx_c.lineTo(0, grid_size.y * square_size);
+    ctx_c.moveTo(0, grid_size.y * square_size - 1);
+    ctx_c.lineTo(grid_size.x * square_size, grid_size.y * square_size - 1);
+    ctx_c.stroke();
 
-    ctx.translate(-line_offset, -line_offset);
+    ctx_c.translate(-line_offset, -line_offset);
+    ctx.drawImage(grid_cache, 0, 0);
 }
 
 function draw_temp_fps(ctx) {
+    const fps_number = (1 / fps).toFixed(1);
+
     ctx.font = "30px Arial";
     ctx.fillStyle = "white";
     ctx.textAlign = "right";
-    const fps_number = (1 / fps).toFixed(1);
     ctx.fillText(`${fps_number}fps`, 412, 456);
 }
 
 function draw(ctx) {
-    ctx.clearRect(0, 0, canvas._resolution.x, canvas._resolution.y);
+    ctx.clearRect(0, 0, game.resolution.x, game.resolution.y);
 
-    // draw_loading_screen();
+    draw_loading_screen(ctx);
 
     ctx.fillStyle = "#555";
     ctx.fillRect(32, 16, 16 * 24, 16 * 28);
@@ -314,13 +335,13 @@ function draw(ctx) {
 
     draw_hud(ctx);
 
-    draw_grid(ctx);
-
     draw_temp_fps(ctx);
 
     for (let i = 0; i < bullets.length; i++) {
         bullets[i].draw(ctx);
     }
+
+    draw_grid(ctx);
 }
 
 let data, menus, fonts, hud, characters, projectiles;
@@ -331,7 +352,7 @@ let accumulator = 0;
 
 function gameLoop(current_time) {
     requestAnimationFrame(gameLoop);
-    const dt = (current_time - last_time) / 1000;
+    const dt = Math.max((current_time - last_time) / 1000, STEP);
     last_time = current_time;
 
     accumulator += Math.min(dt, 0.1);
@@ -355,15 +376,15 @@ function gameLoop(current_time) {
 }
 
 async function main() {
-    canvas = new GameCanvas(document.getElementById("game-window"));
-    ctx = canvas._canvas.getContext("2d");
+    game = new Ardent(document.getElementById("game-window"));
+    ctx = game.canvas.getContext("2d");
     // ctx.scale(dpi, dpi);
 
     [data, menus] = await loadInitAssets();
 
     [fonts, hud, characters, projectiles] = await loadAssets();
 
-    let player = new Player(200, 350);
+    const player = new Player(200, 350);
     players.push(player);
 
     gameLoop(performance.now());
