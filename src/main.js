@@ -2,6 +2,8 @@ import Vector2D from "./math";
 import { loadAssets, loadInitAssets } from "./media";
 import { print, sleep } from "./utils";
 
+let dpi = window.devicePixelRatio;
+let fps = 0;
 
 let fake_lag_timer = 0;
 let fake_lag_enabled = false;
@@ -81,10 +83,12 @@ class Bullet extends Entity {
 
 class Player extends Entity {
     constructor(x, y, w, h) {
-        super();
-        this.position = new Vector2D(x, y);
-        this.size = new Vector2D(w || 32, h || 48);
+        super(x, y, w || 32, h || 48);
         this.speed = 255;
+        this.animation = "idle";
+        this.frame = 0;
+        this.slow = false;
+        this.focus_frame = 0;
     }
 
     update(dt) {
@@ -92,6 +96,7 @@ class Player extends Entity {
         if (keys["KeyA"] || keys["ArrowLeft"]) {
             direction.x -= 1;
         }
+
         if (keys["KeyD"] || keys["ArrowRight"]) {
             direction.x += 1;
         }
@@ -104,9 +109,22 @@ class Player extends Entity {
             direction.y += 1;
         }
 
+        if (direction.x != 0) {
+            if (direction.x > 0) {
+                this.animation = "right";
+            } else {
+                this.animation = "left";
+            }
+        } else {
+            this.animation = "idle";
+        }
+
         let modifier = 1;
         if (keys["ShiftLeft"]) {
+            this.slow = true;
             modifier = 0.5;
+        } else {
+            this.slow = false;
         }
 
         direction.normalize();
@@ -114,22 +132,65 @@ class Player extends Entity {
         this.position.x += this.speed * modifier * direction.x * dt;
         this.position.y += this.speed * modifier * direction.y * dt;
 
-        if (this.position.x + this.size.x > canvas._resolution.x) {
-            this.position.x = canvas._resolution.x - this.size.x;
-        } else if (this.position.x < 0) {
-            this.position.x = 0;
+        const boundary_start = new Vector2D(32, 16);
+        const boundary_end = new Vector2D(16 * 24 + 16 * 2, 16 * 28 + 16);
+
+        if (this.position.x + this.size.x > boundary_end.x) {
+            this.position.x = boundary_end.x - this.size.x;
+        } else if (this.position.x < boundary_start.x) {
+            this.position.x = boundary_start.x;
         }
 
-        if (this.position.y + this.size.y > canvas._resolution.y) {
-            this.position.y = canvas._resolution.y - this.size.y;
-        } else if (this.position.y < 0) {
-            this.position.y = 0;
+        if (this.position.y + this.size.y > boundary_end.y) {
+            this.position.y = boundary_end.y - this.size.y;
+        } else if (this.position.y < boundary_start.y) {
+            this.position.y = boundary_start.y;
         }
     }
 
     draw() {
-        ctx.fillStyle = "blue";
-        ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
+        const int_x = Math.ceil(this.position.x);
+        const int_y = Math.ceil(this.position.y);
+        let offset_x = 16;
+        let offset_y = 16;
+        let w = 32;
+        let h = 48;
+        let frame_i = Math.floor(this.frame);
+        print(frame_i);
+
+        if (frame_i == 0)
+            ctx.fillStyle = "cyan";
+        else
+            ctx.fillStyle = "blue";
+
+        // ctx.fillRect(int_x, int_y, this.size.x, this.size.y);
+        ctx.fillRect(int_x, int_y, w, h);
+        // ctx.drawImage(characters, 10, 10, 45, 60, int_x, int_y, this.size.x, this.size.y);
+        ctx.drawImage(characters, offset_x + w * frame_i, offset_y, w, h, int_x, int_y, w, h);
+
+        this.frame += 0.1;
+
+        if (this.frame >= 8) {
+            this.frame = 0;
+        }
+
+        if (this.slow) {
+            const size = 64;
+            const x = int_x - size / 2 + w / 2;
+            const y = int_y - size / 2 + h / 2;
+            ctx.save();
+            ctx.rotate(this.focus_frame);
+            ctx.fillStyle = "#00000055";
+            ctx.fillRect(x, y, size, size);
+            ctx.drawImage(projectiles, 268, 32, size, size, x, y, size, size)
+            ctx.restore();
+
+            this.focus_frame += 0.1;
+
+            if (this.focus_frame > Math.PI * 2) {
+                this.focus_frame -= Math.PI * 2;
+            }
+        }
     }
 }
 
@@ -220,13 +281,23 @@ function draw_grid() {
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(grid_size.x * square_size, 0);
-    ctx.lineTo(grid_size.x * square_size, grid_size.y * square_size);
+    ctx.moveTo(grid_size.x * square_size - 1, 0);
+    ctx.lineTo(grid_size.x * square_size - 1, grid_size.y * square_size);
     ctx.moveTo(0, 0);
     ctx.lineTo(0, grid_size.y * square_size);
-    ctx.lineTo(grid_size.x * square_size, grid_size.y * square_size);
+    ctx.moveTo(0, grid_size.y * square_size - 1);
+    ctx.lineTo(grid_size.x * square_size, grid_size.y * square_size - 1);
     ctx.stroke();
 
     ctx.translate(-line_offset, -line_offset);
+}
+
+function draw_temp_fps() {
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "right";
+    const fps_number = (1 / fps).toFixed(1);
+    ctx.fillText(`${fps_number}fps`, 412, 456);
 }
 
 function draw() {
@@ -245,12 +316,14 @@ function draw() {
 
     draw_grid();
 
+    draw_temp_fps();
+
     for (let i = 0; i < bullets.length; i++) {
         bullets[i].draw();
     }
 }
 
-let data, menus, hud;
+let data, menus, fonts, hud, characters, projectiles;
 
 const STEP = 1 / 60;
 let last_time = performance.now();
@@ -262,6 +335,7 @@ function gameLoop(current_time) {
     last_time = current_time;
 
     accumulator += dt;
+    fps = dt;
 
     while (accumulator >= STEP) {
         update(STEP);
@@ -283,10 +357,11 @@ function gameLoop(current_time) {
 async function main() {
     canvas = new GameCanvas(document.getElementById("game-window"));
     ctx = canvas._canvas.getContext("2d");
+    // ctx.scale(dpi, dpi);
 
     [data, menus] = await loadInitAssets();
 
-    [hud] = await loadAssets();
+    [fonts, hud, characters, projectiles] = await loadAssets();
 
     let player = new Player(200, 350);
     players.push(player);
@@ -303,5 +378,10 @@ window.addEventListener("keydown", e => {
 window.addEventListener("keyup", e => {
     keys[e.code] = false;
 });
+
+window.addEventListener("resize", e => {
+    // dpi = window.devicePixelRatio;
+    // ctx.scale(dpi, dpi);
+})
 
 window.addEventListener("load", () => { main(); });

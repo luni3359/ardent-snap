@@ -1,5 +1,8 @@
+import characters from "./assets/sprites/characters.png";
+import fonts from "./assets/sprites/fonts.png";
 import hud from "./assets/sprites/hud.png";
 import menus from "./assets/sprites/menus.png";
+import projectiles from "./assets/sprites/projectiles.png";
 import data from "./assets/sprites/spriteInfo.json";
 import { print } from "./utils";
 
@@ -20,6 +23,9 @@ export async function loadInitAssets() {
 
 export async function loadAssets() {
     return await Promise.all([
-        await loadImage(hud)
+        await loadImage(fonts),
+        await loadImage(hud),
+        await loadImage(characters),
+        await loadImage(projectiles)
     ]);
 }
