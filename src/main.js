@@ -126,6 +126,8 @@ class Entity {
         this.size = new Dim2D(w, h);
     }
 
+    update(dt) { }
+
     draw(ctx) {
         ctx.fillStyle = "black";
         ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
@@ -148,21 +150,7 @@ class Bullet extends Entity {
         this.position.x += this.speed.x * dt;
         this.position.y += this.speed.y * dt;
 
-        if (this.position.x + this.radius > Bullet.#boundary_end.x) {
-            this.speed.x = -this.speed.x;
-            this.position.x = Bullet.#boundary_end.x - this.radius;
-        } else if (this.position.x - this.radius < Bullet.#boundary_start.x) {
-            this.speed.x = -this.speed.x;
-            this.position.x = Bullet.#boundary_start.x + this.radius;
-        }
-
-        if (this.position.y + this.radius > Bullet.#boundary_end.y) {
-            this.speed.y = -this.speed.y;
-            this.position.y = Bullet.#boundary_end.y - this.radius;
-        } else if (this.position.y - this.radius < Bullet.#boundary_start.y) {
-            this.speed.y = -this.speed.y;
-            this.position.y = Bullet.#boundary_start.y + this.radius;
-        }
+        this.checkBoundCollision();
     }
 
     draw(ctx) {
@@ -198,6 +186,24 @@ class Bullet extends Entity {
             ctx.fill();
         }
     }
+
+    checkBoundCollision() {
+        if (this.position.x + this.radius > Bullet.#boundary_end.x) {
+            this.speed.x = -this.speed.x;
+            this.position.x = Bullet.#boundary_end.x - this.radius;
+        } else if (this.position.x - this.radius < Bullet.#boundary_start.x) {
+            this.speed.x = -this.speed.x;
+            this.position.x = Bullet.#boundary_start.x + this.radius;
+        }
+
+        if (this.position.y + this.radius > Bullet.#boundary_end.y) {
+            this.speed.y = -this.speed.y;
+            this.position.y = Bullet.#boundary_end.y - this.radius;
+        } else if (this.position.y - this.radius < Bullet.#boundary_start.y) {
+            this.speed.y = -this.speed.y;
+            this.position.y = Bullet.#boundary_start.y + this.radius;
+        }
+    }
 }
 
 class Player extends Entity {
@@ -215,6 +221,8 @@ class Player extends Entity {
 
     update(dt) {
         const direction = new Vector2D();
+        let focus_modifier = 1;
+
         if (keys["KeyA"] || keys["ArrowLeft"]) {
             direction.x -= 1;
         }
@@ -241,30 +249,19 @@ class Player extends Entity {
             this.animation = "idle";
         }
 
-        let modifier = 1;
         if (keys["ShiftLeft"]) {
             this.slow = true;
-            modifier = 0.5;
+            focus_modifier = 0.5;
         } else {
             this.slow = false;
         }
 
         direction.normalize();
 
-        this.position.x += this.speed * modifier * direction.x * dt;
-        this.position.y += this.speed * modifier * direction.y * dt;
+        this.position.x += this.speed * focus_modifier * direction.x * dt;
+        this.position.y += this.speed * focus_modifier * direction.y * dt;
 
-        if (this.position.x + this.size.x > Player.#boundary_end.x) {
-            this.position.x = Player.#boundary_end.x - this.size.x;
-        } else if (this.position.x < Player.#boundary_start.x) {
-            this.position.x = Player.#boundary_start.x;
-        }
-
-        if (this.position.y + this.size.y > Player.#boundary_end.y) {
-            this.position.y = Player.#boundary_end.y - this.size.y;
-        } else if (this.position.y < Player.#boundary_start.y) {
-            this.position.y = Player.#boundary_start.y;
-        }
+        this.checkBoundCollision();
     }
 
     draw(ctx) {
@@ -304,6 +301,20 @@ class Player extends Entity {
             if (this.focus_frame > Math.PI * 2) {
                 this.focus_frame -= Math.PI * 2;
             }
+        }
+    }
+
+    checkBoundCollision() {
+        if (this.position.x + this.size.x > Player.#boundary_end.x) {
+            this.position.x = Player.#boundary_end.x - this.size.x;
+        } else if (this.position.x < Player.#boundary_start.x) {
+            this.position.x = Player.#boundary_start.x;
+        }
+
+        if (this.position.y + this.size.y > Player.#boundary_end.y) {
+            this.position.y = Player.#boundary_end.y - this.size.y;
+        } else if (this.position.y < Player.#boundary_start.y) {
+            this.position.y = Player.#boundary_start.y;
         }
     }
 }
