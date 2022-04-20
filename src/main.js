@@ -5,9 +5,6 @@ import { print, sleep } from "./utils";
 let dpi = window.devicePixelRatio;
 let fps = 0;
 
-let fake_lag_timer = 0;
-let fake_lag_enabled = false;
-
 const keys = {};
 let players = [];
 let bullets = [];
@@ -24,6 +21,9 @@ class Ardent {
     #last_time = 0;
     #accumulator = 0;
     #ctx = null;
+
+    #fake_lag_timer = 0;
+    #fake_lag_enabled = false;
 
     constructor() {
         this.canvas = null;
@@ -44,10 +44,10 @@ class Ardent {
             this.update(this.fps);
         }
 
-        if (fake_lag_enabled) {
-            fake_lag_timer++;
-            if (fake_lag_timer > 500) {
-                fake_lag_timer = 0;
+        if (this.#fake_lag_enabled) {
+            this.#fake_lag_timer++;
+            if (this.#fake_lag_timer > 500) {
+                this.#fake_lag_timer = 0;
                 sleep(500);
                 print("whoops");
             }
