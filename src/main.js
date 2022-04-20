@@ -1,4 +1,4 @@
-import Vector2D from "./math";
+import { Dim2D, Vector2D } from "./math";
 import { loadAssets, loadInitAssets } from "./media";
 import { print, sleep } from "./utils";
 
@@ -17,17 +17,103 @@ let ctx;
 let grid_cache = null;
 let hud_cache = null;
 
+let data, menus, fonts, hud, characters, projectiles;
+
 class Ardent {
-    constructor(canvas) {
-        this.canvas = canvas || null;
-        this.resolution = new Vector2D(640, 480);
-        this.setResolution();
+    #last_time = 0;
+    #accumulator = 0;
+
+    constructor() {
+        this.canvas = null;
+        this.resolution = new Dim2D();
+        this.fps = 30;
+    }
+
+    gameLoop = (current_time) => {
+        requestAnimationFrame(this.gameLoop);
+        const dt = Math.max((current_time - this.#last_time) / 1000, this.fps);
+        this.#last_time = current_time;
+
+        this.#accumulator += Math.min(dt, 0.1);
+        fps = dt;
+
+        while (this.#accumulator >= this.fps) {
+            this.update(this.fps);
+            this.#accumulator -= this.fps;
+        }
+
+        if (fake_lag_enabled) {
+            fake_lag_timer++;
+            if (fake_lag_timer > 500) {
+                fake_lag_timer = 0;
+                sleep(500);
+                print("whoops");
+            }
+        }
+
+        this.draw(ctx);
+    };
+
+    update = (dt) => {
+        for (let i = 0; i < players.length; i++) {
+            players[i].update(dt);
+        }
+
+        for (let i = 0; i < bullets.length; i++) {
+            bullets[i].update(dt);
+        }
+    };
+
+    draw = (ctx) => {
+        ctx.clearRect(0, 0, game.resolution.x, game.resolution.y);
+
+        draw_loading_screen(ctx);
+
+        ctx.fillStyle = "#555";
+        ctx.fillRect(32, 16, 16 * 24, 16 * 28);
+
+        for (let i = 0; i < players.length; i++) {
+            players[i].draw(ctx);
+        }
+
+        draw_hud(ctx);
+
+        draw_temp_fps(ctx);
+
+        for (let i = 0; i < bullets.length; i++) {
+            bullets[i].draw(ctx);
+        }
+
+        draw_grid(ctx);
+    };
+
+    play() {
+        this.#last_time = performance.now();
+        this.gameLoop(performance.now());
+    }
+
+    setFPS(n) {
+        this.fps = 1 / n;
     }
 
     setResolution(w, h) {
-        this.resolution.x = w || this.resolution.x;
-        this.resolution.y = h || this.resolution.y;
+        if (!w || !h) {
+            return;
+        }
 
+        this.resolution.x = w;
+        this.resolution.y = h;
+
+        if (this.canvas) {
+            this.updateCanvas();
+        }
+    }
+
+    setCanvas(canvas) {
+        this.canvas = canvas;
+    }
+
+    updateCanvas() {
         this.canvas.style.width = `${this.resolution.x}px`;
         this.canvas.style.height = `${this.resolution.y}px`;
         this.canvas.width = this.resolution.x;
@@ -38,7 +124,7 @@ class Ardent {
 class Entity {
     constructor(x, y, w, h) {
         this.position = new Vector2D(x, y);
-        this.size = new Vector2D(w, h);
+        this.size = new Dim2D(w, h);
     }
 
     draw(ctx) {
@@ -135,8 +221,8 @@ class Player extends Entity {
         this.position.x += this.speed * modifier * direction.x * dt;
         this.position.y += this.speed * modifier * direction.y * dt;
 
-        const boundary_start = new Vector2D(32, 16);
-        const boundary_end = new Vector2D(16 * 24 + 16 * 2, 16 * 28 + 16);
+        const boundary_start = new Dim2D(32, 16);
+        const boundary_end = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
 
         if (this.position.x + this.size.x > boundary_end.x) {
             this.position.x = boundary_end.x - this.size.x;
@@ -191,17 +277,6 @@ class Player extends Entity {
     }
 }
 
-
-function update(dt) {
-    for (let i = 0; i < players.length; i++) {
-        players[i].update(dt);
-    }
-
-    for (let i = 0; i < bullets.length; i++) {
-        bullets[i].update(dt);
-    }
-}
-
 function draw_loading_screen(ctx) {
     const lsc = data['loading-screen'];
     const lgw = data['loading-girls-waiting'];
@@ -250,7 +325,7 @@ function draw_grid(ctx) {
     }
 
     grid_cache = document.createElement("canvas");
-    const grid_size = new Vector2D(40, 30);
+    const grid_size = new Dim2D(40, 30);
     const square_size = 16;
     const line_offset = 0.5;
 
@@ -321,62 +396,13 @@ function draw_temp_fps(ctx) {
     ctx.fillText(`${fps_number}fps`, 412, 456);
 }
 
-function draw(ctx) {
-    ctx.clearRect(0, 0, game.resolution.x, game.resolution.y);
-
-    draw_loading_screen(ctx);
-
-    ctx.fillStyle = "#555";
-    ctx.fillRect(32, 16, 16 * 24, 16 * 28);
-
-    for (let i = 0; i < players.length; i++) {
-        players[i].draw(ctx);
-    }
-
-    draw_hud(ctx);
-
-    draw_temp_fps(ctx);
-
-    for (let i = 0; i < bullets.length; i++) {
-        bullets[i].draw(ctx);
-    }
-
-    draw_grid(ctx);
-}
-
-let data, menus, fonts, hud, characters, projectiles;
-
-const STEP = 1 / 60;
-let last_time = performance.now();
-let accumulator = 0;
-
-function gameLoop(current_time) {
-    requestAnimationFrame(gameLoop);
-    const dt = Math.max((current_time - last_time) / 1000, STEP);
-    last_time = current_time;
-
-    accumulator += Math.min(dt, 0.1);
-    fps = dt;
-
-    while (accumulator >= STEP) {
-        update(STEP);
-        accumulator -= STEP;
-    }
-
-    if (fake_lag_enabled) {
-        fake_lag_timer++;
-        if (fake_lag_timer > 500) {
-            fake_lag_timer = 0;
-            sleep(500);
-            print("whoops");
-        }
-    }
-
-    draw(ctx);
-}
-
 async function main() {
-    game = new Ardent(document.getElementById("game-window"));
+    const canvas = document.getElementById("game-window");
+
+    game = new Ardent();
+    game.setCanvas(canvas);
+    game.setResolution(640, 480);
+    game.setFPS(60);
     ctx = game.canvas.getContext("2d");
     // ctx.scale(dpi, dpi);
 
@@ -387,7 +413,7 @@ async function main() {
     const player = new Player(200, 350);
     players.push(player);
 
-    gameLoop(performance.now());
+    game.play();
 }
 
 

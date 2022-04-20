@@ -1,4 +1,4 @@
-export default class Vector2D {
+export class Vector2D {
     constructor(x, y) {
         this.x = x || 0;
         this.y = y || 0;
@@ -29,5 +29,12 @@ export default class Vector2D {
 
         this.x /= magnitude;
         this.y /= magnitude;
+    }
+}
+
+export class Dim2D {
+    constructor(x, y) {
+        this.x = x || 0;
+        this.y = y || 0;
     }
 }
