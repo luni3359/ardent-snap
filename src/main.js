@@ -19,6 +19,8 @@ let hud_cache = null;
 let data, menus, fonts, hud, characters, projectiles;
 
 class Ardent {
+    static debugMode = false;
+
     #last_time = 0;
     #accumulator = 0;
     #ctx = null;
@@ -270,12 +272,14 @@ class Player extends Entity {
         const int_y = Math.floor(this.position.y);
         const frame_i = Math.floor(this.frame);
 
-        if (frame_i == 0)
-            ctx.fillStyle = "cyan";
-        else
-            ctx.fillStyle = "blue";
+        if (Ardent.debugMode) {
+            if (frame_i == 0)
+                ctx.fillStyle = "cyan";
+            else
+                ctx.fillStyle = "blue";
+            ctx.fillRect(int_x, int_y, character.w, character.h);
+        }
 
-        ctx.fillRect(int_x, int_y, character.w, character.h);
         ctx.drawImage(characters, character.x + character.w * frame_i, character.y, character.w, character.h, int_x, int_y, character.w, character.h);
 
         this.frame += 0.1;
@@ -289,8 +293,12 @@ class Player extends Entity {
 
             ctx.setTransform(1, 0, 0, 1, int_x + character.w / 2, int_y + character.h / 2);
             ctx.rotate(this.focus_frame);
-            ctx.fillStyle = "#00000055";
-            ctx.fillRect(-sign.w / 2, -sign.h / 2, sign.w, sign.h);
+
+            if (Ardent.debugMode) {
+                ctx.fillStyle = "#00000055";
+                ctx.fillRect(-sign.w / 2, -sign.h / 2, sign.w, sign.h);
+            }
+
             ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
             ctx.rotate(-this.focus_frame * 1.5);
             ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
