@@ -201,6 +201,9 @@ class Bullet extends Entity {
 }
 
 class Player extends Entity {
+    static #boundary_start = new Dim2D(32, 16);
+    static #boundary_end = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
+
     constructor(x, y, w, h) {
         super(x, y, w || 32, h || 48);
         this.speed = 255;
@@ -251,19 +254,16 @@ class Player extends Entity {
         this.position.x += this.speed * modifier * direction.x * dt;
         this.position.y += this.speed * modifier * direction.y * dt;
 
-        const boundary_start = new Dim2D(32, 16);
-        const boundary_end = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
-
-        if (this.position.x + this.size.x > boundary_end.x) {
-            this.position.x = boundary_end.x - this.size.x;
-        } else if (this.position.x < boundary_start.x) {
-            this.position.x = boundary_start.x;
+        if (this.position.x + this.size.x > Player.#boundary_end.x) {
+            this.position.x = Player.#boundary_end.x - this.size.x;
+        } else if (this.position.x < Player.#boundary_start.x) {
+            this.position.x = Player.#boundary_start.x;
         }
 
-        if (this.position.y + this.size.y > boundary_end.y) {
-            this.position.y = boundary_end.y - this.size.y;
-        } else if (this.position.y < boundary_start.y) {
-            this.position.y = boundary_start.y;
+        if (this.position.y + this.size.y > Player.#boundary_end.y) {
+            this.position.y = Player.#boundary_end.y - this.size.y;
+        } else if (this.position.y < Player.#boundary_start.y) {
+            this.position.y = Player.#boundary_start.y;
         }
     }
 
