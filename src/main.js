@@ -174,8 +174,12 @@ class Bullet extends Entity {
             sprite_cache.width = size;
             sprite_cache.height = size;
             const ctx_c = sprite_cache.getContext("2d");
-            // ctx_c.fillStyle = "cyan";
-            // ctx_c.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
+
+            if (Ardent.debugMode) {
+                ctx_c.fillStyle = "cyan";
+                ctx_c.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
+            }
+
             ctx_c.beginPath();
             ctx_c.arc(x, y, size / 2, 0, 2 * Math.PI, false);
             ctx_c.fillStyle = "magenta";
@@ -217,7 +221,7 @@ class Player extends Entity {
         this.speed = 255;
         this.animation = "idle";
         this.frame = 0;
-        this.slow = false;
+        this.isFocused = false;
         this.focus_frame = 0;
     }
 
@@ -252,10 +256,10 @@ class Player extends Entity {
         }
 
         if (keys["ShiftLeft"]) {
-            this.slow = true;
+            this.isFocused = true;
             focus_modifier = 0.5;
         } else {
-            this.slow = false;
+            this.isFocused = false;
         }
 
         direction.normalize();
@@ -288,7 +292,7 @@ class Player extends Entity {
             this.frame = 0;
         }
 
-        if (this.slow) {
+        if (this.isFocused) {
             const sign = data['focus-sign'];
 
             ctx.setTransform(1, 0, 0, 1, int_x + character.w / 2, int_y + character.h / 2);
