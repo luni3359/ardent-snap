@@ -381,47 +381,53 @@ function draw_grid(ctx) {
     grid_cache = document.createElement("canvas");
     const grid_size = new Dim2D(40, 30);
     const square_size = 16;
+    const dash_length = 4;
     const line_offset = 0.5;
-
     grid_cache.width = grid_size.x * square_size;
     grid_cache.height = grid_size.y * square_size;
     const ctx_c = grid_cache.getContext("2d");
-
-    ctx_c.setLineDash([4, 4]);
+    
     ctx_c.setTransform(1, 0, 0, 1, line_offset, line_offset);
+    ctx_c.lineCap = "square";
+    ctx_c.lineWidth = 1;
+    ctx_c.setLineDash([4]);
 
     // draw vertical lines
     for (let i = 0; i < grid_size.x; i++) {
         const x = i * square_size;
-        const y = grid_size.y * square_size;
+        for (let j = 0; j < grid_size.y * dash_length; j++) {
+            const y = j * dash_length;
 
-        ctx_c.strokeStyle = "white";
-        ctx_c.beginPath();
-        ctx_c.moveTo(x, 0);
-        ctx_c.lineTo(x, y);
-        ctx_c.stroke();
-        ctx_c.strokeStyle = "black";
-        ctx_c.beginPath();
-        ctx_c.moveTo(x, y);
-        ctx_c.lineTo(x, 0);
-        ctx_c.stroke();
+            if (j % 2 == 0) {
+                ctx_c.strokeStyle = "white";
+            } else {
+                ctx_c.strokeStyle = "black";
+            }
+
+            ctx_c.beginPath();
+            ctx_c.moveTo(x, y);
+            ctx_c.lineTo(x, y + dash_length);
+            ctx_c.stroke();
+        }
     }
 
     // draw horizontal lines
     for (let i = 0; i < grid_size.y; i++) {
-        const x = grid_size.x * square_size;
         const y = i * square_size;
+        for (let j = 0; j < grid_size.x * dash_length; j++) {
+            const x = j * dash_length;
 
-        ctx_c.strokeStyle = "white";
-        ctx_c.beginPath();
-        ctx_c.moveTo(0, y);
-        ctx_c.lineTo(x, y);
-        ctx_c.stroke();
-        ctx_c.strokeStyle = "black";
-        ctx_c.beginPath();
-        ctx_c.moveTo(x, y);
-        ctx_c.lineTo(0, y);
-        ctx_c.stroke();
+            if (j % 2 == 0) {
+                ctx_c.strokeStyle = "white";
+            } else {
+                ctx_c.strokeStyle = "black";
+            }
+
+            ctx_c.beginPath();
+            ctx_c.moveTo(x, y);
+            ctx_c.lineTo(x + dash_length, y);
+            ctx_c.stroke();
+        }
     }
 
     // draw gold frame
@@ -447,8 +453,9 @@ function draw_temp_fps(ctx) {
     const y = 460;
 
     ctx.font = "16px Arial";
-    ctx.fillStyle = "white";
     ctx.textAlign = "right";
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "black";
     ctx.lineWidth = 3;
     ctx.strokeText(text, x, y);
     ctx.fillText(text, x, y);
