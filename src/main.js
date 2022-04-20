@@ -12,7 +12,6 @@ const keys = {};
 let players = [];
 let bullets = [];
 let game;
-let ctx;
 
 let grid_cache = null;
 let hud_cache = null;
@@ -22,6 +21,7 @@ let data, menus, fonts, hud, characters, projectiles;
 class Ardent {
     #last_time = 0;
     #accumulator = 0;
+    #ctx = null;
 
     constructor() {
         this.canvas = null;
@@ -31,15 +31,15 @@ class Ardent {
 
     gameLoop = (current_time) => {
         requestAnimationFrame(this.gameLoop);
-        const dt = Math.max((current_time - this.#last_time) / 1000, this.fps);
+        const dt = (current_time - this.#last_time) / 1000;
         this.#last_time = current_time;
+        fps = Math.max(dt, this.fps);
 
         this.#accumulator += Math.min(dt, 0.1);
-        fps = dt;
 
         while (this.#accumulator >= this.fps) {
-            this.update(this.fps);
             this.#accumulator -= this.fps;
+            this.update(this.fps);
         }
 
         if (fake_lag_enabled) {
@@ -51,7 +51,7 @@ class Ardent {
             }
         }
 
-        this.draw(ctx);
+        this.draw(this.#ctx);
     };
 
     update = (dt) => {
@@ -76,18 +76,17 @@ class Ardent {
             players[i].draw(ctx);
         }
 
-        draw_hud(ctx);
-
-        draw_temp_fps(ctx);
-
         for (let i = 0; i < bullets.length; i++) {
             bullets[i].draw(ctx);
         }
 
+        draw_hud(ctx);
         draw_grid(ctx);
+        draw_temp_fps(ctx);
     };
 
     play() {
+        this.#ctx = this.canvas.getContext("2d");
         this.#last_time = performance.now();
         this.gameLoop(performance.now());
     }
@@ -258,17 +257,18 @@ class Player extends Entity {
         }
 
         if (this.slow) {
-            const size = 64;
-            const x = int_x - size / 2 + character.w / 2;
-            const y = int_y - size / 2 + character.h / 2;
-            ctx.save();
+            const sign = data['focus-sign'];
+
+            ctx.setTransform(1, 0, 0, 1, int_x + character.w / 2, int_y + character.h / 2);
             ctx.rotate(this.focus_frame);
             ctx.fillStyle = "#00000055";
-            ctx.fillRect(x, y, size, size);
-            ctx.drawImage(projectiles, 268, 32, size, size, x, y, size, size)
-            ctx.restore();
+            ctx.fillRect(-sign.w / 2, -sign.h / 2, sign.w, sign.h);
+            ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
+            ctx.rotate(-this.focus_frame * 1.5);
+            ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-            this.focus_frame += 0.1;
+            this.focus_frame += 0.05;
 
             if (this.focus_frame > Math.PI * 2) {
                 this.focus_frame -= Math.PI * 2;
@@ -389,11 +389,16 @@ function draw_grid(ctx) {
 
 function draw_temp_fps(ctx) {
     const fps_number = (1 / fps).toFixed(1);
+    const text = `${fps_number}fps`;
+    const x = 414;
+    const y = 460;
 
-    ctx.font = "30px Arial";
+    ctx.font = "16px Arial";
     ctx.fillStyle = "white";
     ctx.textAlign = "right";
-    ctx.fillText(`${fps_number}fps`, 412, 456);
+    ctx.lineWidth = 3;
+    ctx.strokeText(text, x, y);
+    ctx.fillText(text, x, y);
 }
 
 async function main() {
@@ -403,8 +408,6 @@ async function main() {
     game.setCanvas(canvas);
     game.setResolution(640, 480);
     game.setFPS(60);
-    ctx = game.canvas.getContext("2d");
-    // ctx.scale(dpi, dpi);
 
     [data, menus] = await loadInitAssets();
 
