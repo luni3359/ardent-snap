@@ -331,10 +331,10 @@ let accumulator = 0;
 
 function gameLoop(current_time) {
     requestAnimationFrame(gameLoop);
-    let dt = Math.min((current_time - last_time) / 1000, 0.1);
+    const dt = (current_time - last_time) / 1000;
     last_time = current_time;
 
-    accumulator += dt;
+    accumulator += Math.min(dt, 0.1);
     fps = dt;
 
     while (accumulator >= STEP) {
