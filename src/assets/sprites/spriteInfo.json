@@ -1,0 +1,89 @@
+{
+    "loading-screen": {
+        "x": 1240,
+        "y": 48,
+        "w": 640,
+        "h": 480
+    },
+    "loading-girls-waiting": {
+        "x": 1240,
+        "y": 528,
+        "w": 125,
+        "h": 45
+    },
+    "loading-now-loading": {
+        "x": 1250,
+        "y": 570,
+        "w": 125,
+        "h": 30
+    },
+    "title-screen": {
+        "x": 40,
+        "y": 48,
+        "w": 640,
+        "h": 480
+    },
+    "hud-background-right": {
+        "x": 64,
+        "y": 32,
+        "w": 224,
+        "h": 480
+    },
+    "hud-background-left": {
+        "x": 32,
+        "y": 32,
+        "w": 32,
+        "h": 480
+    },
+    "hud-background-top": {
+        "x": 32,
+        "y": 512,
+        "w": 384,
+        "h": 16
+    },
+    "hud-background-bottom": {
+        "x": 32,
+        "y": 528,
+        "w": 384,
+        "h": 16
+    },
+    "focus-sign" : {
+        "x": 269,
+        "y": 32,
+        "w": 64,
+        "h": 64
+    },
+    "reimu": {
+        "data": {
+            "x": 16,
+            "y": 16,
+            "w": 32,
+            "h": 48
+        }
+    },
+    "fonts": {
+        "large": {},
+        "small": {
+            "space": {},
+            "exclamation-mark": {},
+            "double-quotes": {},
+            "number": {},
+            "money": {},
+            "percentage": {},
+            "and": {},
+            "single-quote": {},
+            "par-open": {},
+            "par-close": {},
+            "asterisk": {},
+            "plus": {},
+            "comma": {},
+            "minus": {},
+            "period": {},
+            "slash": {},
+            "0": {},
+            "1": {},
+            "2": {}
+
+        }
+    }
+}
