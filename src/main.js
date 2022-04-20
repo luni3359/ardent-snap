@@ -81,7 +81,7 @@ class Ardent {
         }
 
         draw_hud(ctx);
-        draw_grid(ctx);
+        // draw_grid(ctx);
         draw_temp_fps(ctx);
     };
 
@@ -133,6 +133,10 @@ class Entity {
 }
 
 class Bullet extends Entity {
+    static #boundary_start = new Dim2D(32, 16);
+    static #boundary_end = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
+    static #sprite_cache = null;
+
     constructor(x, y) {
         super(x, y);
         this.topspeed = 500;
@@ -144,28 +148,55 @@ class Bullet extends Entity {
         this.position.x += this.speed.x * dt;
         this.position.y += this.speed.y * dt;
 
-        if (this.position.x + this.radius > game.resolution.x) {
+        if (this.position.x + this.radius > Bullet.#boundary_end.x) {
             this.speed.x = -this.speed.x;
-            this.position.x = game.resolution.x - this.radius;
-        } else if (this.position.x - this.radius < 0) {
+            this.position.x = Bullet.#boundary_end.x - this.radius;
+        } else if (this.position.x - this.radius < Bullet.#boundary_start.x) {
             this.speed.x = -this.speed.x;
-            this.position.x = this.radius;
+            this.position.x = Bullet.#boundary_start.x + this.radius;
         }
 
-        if (this.position.y + this.radius > game.resolution.y) {
+        if (this.position.y + this.radius > Bullet.#boundary_end.y) {
             this.speed.y = -this.speed.y;
-            this.position.y = game.resolution.y - this.radius;
-        } else if (this.position.y - this.radius < 0) {
+            this.position.y = Bullet.#boundary_end.y - this.radius;
+        } else if (this.position.y - this.radius < Bullet.#boundary_start.y) {
             this.speed.y = -this.speed.y;
-            this.position.y = this.radius;
+            this.position.y = Bullet.#boundary_start.y + this.radius;
         }
     }
 
     draw(ctx) {
-        ctx.beginPath();
-        ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = "magenta";
-        ctx.fill();
+        const isCaching = false;
+
+        if (isCaching) {
+            const size = this.radius * 2;
+
+            if (Bullet.#sprite_cache) {
+                ctx.drawImage(Bullet.#sprite_cache, this.position.x - this.radius, this.position.y - this.radius, size, size);
+                return;
+            }
+
+            const x = this.radius;
+            const y = this.radius;
+
+            const sprite_cache = document.createElement("canvas");
+            Bullet.#sprite_cache = sprite_cache;
+            sprite_cache.width = size;
+            sprite_cache.height = size;
+            const ctx_c = sprite_cache.getContext("2d");
+            // ctx_c.fillStyle = "cyan";
+            // ctx_c.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
+            ctx_c.beginPath();
+            ctx_c.arc(x, y, size / 2, 0, 2 * Math.PI, false);
+            ctx_c.fillStyle = "magenta";
+            ctx_c.fill();
+            ctx.drawImage(sprite_cache, this.position.x, this.position.y, size, size);
+        } else {
+            ctx.beginPath();
+            ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = "magenta";
+            ctx.fill();
+        }
     }
 }
 
@@ -415,6 +446,11 @@ async function main() {
 
     const player = new Player(200, 350);
     players.push(player);
+
+    // for (let i = 0; i < 10; i++) {
+    //     const bullet = new Bullet();
+    //     bullets.push(bullet);
+    // }
 
     game.play();
 }
