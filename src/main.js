@@ -300,15 +300,15 @@ class Player extends Entity {
             const sign = data['focus-sign'];
 
             ctx.setTransform(1, 0, 0, 1, int_x + character.w / 2, int_y + character.h / 2);
-            ctx.rotate(this.focus_frame);
+            ctx.rotate(-this.focus_frame);
+            ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
+            ctx.rotate(this.focus_frame * 2);
 
             if (Ardent.debugMode) {
                 ctx.fillStyle = "#00000055";
                 ctx.fillRect(-sign.w / 2, -sign.h / 2, sign.w, sign.h);
             }
 
-            ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
-            ctx.rotate(-this.focus_frame * 1.5);
             ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
             ctx.setTransform(1, 0, 0, 1, 0, 0);
 
