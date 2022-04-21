@@ -13,7 +13,7 @@ let bullets = [];
 let grid_cache = null;
 let hud_cache = null;
 
-let game, show_grid, show_fps;
+let game, cursor, show_grid, show_fps;
 let data, menus, fonts, hud, characters, projectiles;
 
 class Ardent {
@@ -90,6 +90,9 @@ class Ardent {
 
         if (show_fps)
             draw_temp_fps(ctx);
+
+        if (Ardent.debugMode)
+            draw_mouse(ctx);
     };
 
     play() {
@@ -544,8 +547,20 @@ function draw_temp_fps(ctx) {
     ctx.fillText(text, x, y);
 }
 
+function draw_mouse(ctx) {
+    const boxSize = 20;
+    ctx.fillStyle = "blue";
+    ctx.fillRect(cursor.x - boxSize, cursor.y - boxSize, boxSize, boxSize);
+}
+
 async function main() {
     const canvas = document.getElementById("game-window");
+    cursor = new Dim2D(0, 0);
+    
+    canvas.addEventListener("mousemove", e => {
+        cursor.x = e.offsetX;
+        cursor.y = e.offsetY;
+    });
 
     game = new Ardent();
     game.setCanvas(canvas);
