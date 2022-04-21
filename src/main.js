@@ -372,6 +372,87 @@ function draw_hud(ctx) {
     ctx.drawImage(hud_cache, 0, 0);
 }
 
+function trace_dotted_axis(ctx, dim, lockedAxis, lineSpacing, dashLength) {
+    let variableAxis, fixedAxis;
+
+    switch (lockedAxis) {
+        case "x":
+            fixedAxis = dim.y;
+            variableAxis = dim.x;
+            break;
+        case "y":
+            fixedAxis = dim.x;
+            variableAxis = dim.y;
+            break;
+    }
+
+    for (let i = 0; i < fixedAxis; i++) {
+        const a = i * lineSpacing;
+        for (let j = 0; j < variableAxis * dashLength; j++) {
+            const b = j * dashLength;
+
+            if (j % 2 == 0) {
+                ctx.fillStyle = "white";
+            } else {
+                ctx.fillStyle = "black";
+            }
+
+            switch (lockedAxis) {
+                case "x":
+                    ctx.fillRect(b, a, dashLength, 1);
+                    break;
+                case "y":
+                    ctx.fillRect(a, b, 1, dashLength);
+                    break;
+            }
+        }
+    }
+}
+
+function trace_dotted_frame(ctx, dim, lockedAxis, lineSpacing, dashLength) {
+    let variableAxis, fixedAxis;
+
+    switch (lockedAxis) {
+        case "x":
+            fixedAxis = dim.y;
+            variableAxis = dim.x;
+            break;
+        case "y":
+            fixedAxis = dim.x;
+            variableAxis = dim.y;
+            break;
+    }
+    for (let i = 0; i < 2; i++) {
+        const a = i * fixedAxis * lineSpacing;
+        for (let j = 0; j < variableAxis * dashLength; j++) {
+            const b = j * dashLength;
+
+            if (j % 2 == 0) {
+                ctx.fillStyle = "yellow";
+            } else {
+                ctx.fillStyle = "black";
+            }
+
+            switch (lockedAxis) {
+                case "x":
+                    if (i % 2 == 0) {
+                        ctx.fillRect(b, a, dashLength, 1);
+                    } else {
+                        ctx.fillRect(b, a - 1, dashLength, 1);
+                    }
+                    break;
+                case "y":
+                    if (i % 2 == 0) {
+                        ctx.fillRect(a, b, 1, dashLength);
+                    } else {
+                        ctx.fillRect(a - 1, b, 1, dashLength);
+                    }
+                    break;
+            }
+        }
+    }
+}
+
 function draw_grid(ctx) {
     if (grid_cache) {
         ctx.drawImage(grid_cache, 0, 0);
@@ -381,67 +462,20 @@ function draw_grid(ctx) {
     grid_cache = document.createElement("canvas");
     const grid_size = new Dim2D(40, 30);
     const square_size = 16;
-    const dash_length = 4;
-    const line_offset = 0.5;
+    const dashes_per_square = 4;
+    const dash_length = square_size / dashes_per_square;
+
     grid_cache.width = grid_size.x * square_size;
     grid_cache.height = grid_size.y * square_size;
     const ctx_c = grid_cache.getContext("2d");
-    
-    ctx_c.setTransform(1, 0, 0, 1, line_offset, line_offset);
-    ctx_c.lineCap = "square";
-    ctx_c.lineWidth = 1;
-    ctx_c.setLineDash([4]);
 
-    // draw vertical lines
-    for (let i = 0; i < grid_size.x; i++) {
-        const x = i * square_size;
-        for (let j = 0; j < grid_size.y * dash_length; j++) {
-            const y = j * dash_length;
-
-            if (j % 2 == 0) {
-                ctx_c.strokeStyle = "white";
-            } else {
-                ctx_c.strokeStyle = "black";
-            }
-
-            ctx_c.beginPath();
-            ctx_c.moveTo(x, y);
-            ctx_c.lineTo(x, y + dash_length);
-            ctx_c.stroke();
-        }
-    }
-
-    // draw horizontal lines
-    for (let i = 0; i < grid_size.y; i++) {
-        const y = i * square_size;
-        for (let j = 0; j < grid_size.x * dash_length; j++) {
-            const x = j * dash_length;
-
-            if (j % 2 == 0) {
-                ctx_c.strokeStyle = "white";
-            } else {
-                ctx_c.strokeStyle = "black";
-            }
-
-            ctx_c.beginPath();
-            ctx_c.moveTo(x, y);
-            ctx_c.lineTo(x + dash_length, y);
-            ctx_c.stroke();
-        }
-    }
+    // draw grid lines
+    trace_dotted_axis(ctx_c, grid_size, "x", square_size, dash_length);
+    trace_dotted_axis(ctx_c, grid_size, "y", square_size, dash_length);
 
     // draw gold frame
-    ctx_c.strokeStyle = "yellow";
-    ctx_c.beginPath();
-    ctx_c.moveTo(0, 0);
-    ctx_c.lineTo(grid_size.x * square_size, 0);
-    ctx_c.moveTo(grid_size.x * square_size - 1, 0);
-    ctx_c.lineTo(grid_size.x * square_size - 1, grid_size.y * square_size);
-    ctx_c.moveTo(0, 0);
-    ctx_c.lineTo(0, grid_size.y * square_size);
-    ctx_c.moveTo(0, grid_size.y * square_size - 1);
-    ctx_c.lineTo(grid_size.x * square_size, grid_size.y * square_size - 1);
-    ctx_c.stroke();
+    trace_dotted_frame(ctx_c, grid_size, "x", square_size, dash_length);
+    trace_dotted_frame(ctx_c, grid_size, "y", square_size, dash_length);
 
     ctx.drawImage(grid_cache, 0, 0);
 }
