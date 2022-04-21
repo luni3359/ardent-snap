@@ -143,9 +143,11 @@ class Bullet extends Entity {
 
     constructor(x, y) {
         super(x, y);
-        this.topspeed = 500;
+        this.topspeed = 250;
         this.radius = 8;
-        this.speed = new Vector2D(Math.random() * this.topspeed - this.topspeed / 2, Math.random() * this.topspeed - this.topspeed / 2);
+
+        const randomDirection = new Vector2D(Math.random() - 0.5, Math.random() - 0.5).unit();
+        this.speed = randomDirection.multiply(new Vector2D(this.topspeed * Math.random(), this.topspeed * Math.random()));
     }
 
     update(dt) {
@@ -156,58 +158,59 @@ class Bullet extends Entity {
     }
 
     draw(ctx) {
-        const isCaching = false;
+        const size = this.radius * 2;
 
-        if (isCaching) {
-            const size = this.radius * 2;
-
-            if (Bullet.#sprite_cache) {
-                ctx.drawImage(Bullet.#sprite_cache, this.position.x - this.radius, this.position.y - this.radius, size, size);
-                return;
-            }
-
-            const x = this.radius;
-            const y = this.radius;
-
-            const sprite_cache = document.createElement("canvas");
-            Bullet.#sprite_cache = sprite_cache;
-            sprite_cache.width = size;
-            sprite_cache.height = size;
-            const ctx_c = sprite_cache.getContext("2d");
-
-            if (Ardent.debugMode) {
-                ctx_c.fillStyle = "cyan";
-                ctx_c.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
-            }
-
-            ctx_c.beginPath();
-            ctx_c.arc(x, y, size / 2, 0, 2 * Math.PI, false);
-            ctx_c.fillStyle = "magenta";
-            ctx_c.fill();
-            ctx.drawImage(sprite_cache, this.position.x, this.position.y, size, size);
-        } else {
-            ctx.beginPath();
-            ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-            ctx.fillStyle = "magenta";
-            ctx.fill();
+        if (Bullet.#sprite_cache) {
+            ctx.drawImage(Bullet.#sprite_cache, this.position.x - this.radius, this.position.y - this.radius, size, size);
+            return;
         }
+
+        const x = this.radius;
+        const y = this.radius;
+
+        const sprite_cache = document.createElement("canvas");
+        Bullet.#sprite_cache = sprite_cache;
+        sprite_cache.width = size;
+        sprite_cache.height = size;
+        const ctx_c = sprite_cache.getContext("2d");
+
+        if (Ardent.debugMode) {
+            ctx_c.fillStyle = "cyan";
+            ctx_c.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
+        }
+
+        ctx_c.beginPath();
+        ctx_c.arc(x, y, size / 2, 0, 2 * Math.PI, false);
+        ctx_c.fillStyle = "magenta";
+        ctx_c.fill();
+        ctx.drawImage(sprite_cache, this.position.x, this.position.y, size, size);
     }
 
     checkBoundCollision() {
+        let bounced = false;
+
         if (this.position.x + this.radius > Bullet.#boundary_end.x) {
+            bounced = true;
             this.speed.x = -this.speed.x;
             this.position.x = Bullet.#boundary_end.x - this.radius;
         } else if (this.position.x - this.radius < Bullet.#boundary_start.x) {
+            bounced = true;
             this.speed.x = -this.speed.x;
             this.position.x = Bullet.#boundary_start.x + this.radius;
         }
 
         if (this.position.y + this.radius > Bullet.#boundary_end.y) {
+            bounced = true;
             this.speed.y = -this.speed.y;
             this.position.y = Bullet.#boundary_end.y - this.radius;
         } else if (this.position.y - this.radius < Bullet.#boundary_start.y) {
+            bounced = true;
             this.speed.y = -this.speed.y;
             this.position.y = Bullet.#boundary_start.y + this.radius;
+        }
+
+        if (bounced) {
+            this.speed = new Vector2D(this.speed.x * 1.1, this.speed.y * 1.1);
         }
     }
 }
@@ -267,6 +270,7 @@ class Player extends Entity {
         this.position.x += this.speed * focus_modifier * direction.x * dt;
         this.position.y += this.speed * focus_modifier * direction.y * dt;
 
+        this.checkBulletCollision();
         this.checkBoundCollision();
     }
 
@@ -312,6 +316,19 @@ class Player extends Entity {
 
             if (this.focus_frame > Math.PI * 2) {
                 this.focus_frame -= Math.PI * 2;
+            }
+        }
+    }
+
+    checkBulletCollision() {
+        for (let i = 0; i < bullets.length; i++) {
+            const bullet = bullets[i];
+
+            if (this.position.x < bullet.position.x && this.position.y < bullet.position.y) {
+                if (this.position.x + this.size.x > bullet.position.x && this.position.y + this.size.y > bullet.position.y) {
+                    bullet.speed = new Vector2D();
+                    // bullets.splice(i,1);
+                }
             }
         }
     }
@@ -510,8 +527,8 @@ async function main() {
     const player = new Player(200, 350);
     players.push(player);
 
-    // for (let i = 0; i < 10; i++) {
-    //     const bullet = new Bullet();
+    // for (let i = 0; i < 100; i++) {
+    //     const bullet = new Bullet(220, 250);
     //     bullets.push(bullet);
     // }
 

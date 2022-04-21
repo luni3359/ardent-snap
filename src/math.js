@@ -4,6 +4,10 @@ export class Vector2D {
         this.y = y || 0;
     }
 
+    multiply(vector) {
+        return new Vector2D(this.x * vector.x, this.y * vector.y);
+    }
+
     magnitude() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
