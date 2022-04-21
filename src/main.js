@@ -549,17 +549,24 @@ function draw_temp_fps(ctx) {
 
 function draw_mouse(ctx) {
     const boxSize = 20;
+    const x = Math.floor(cursor.x - boxSize);
+    const y = Math.floor(cursor.y - boxSize);
+
     ctx.fillStyle = "blue";
-    ctx.fillRect(cursor.x - boxSize, cursor.y - boxSize, boxSize, boxSize);
+    ctx.fillRect(x, y, boxSize, boxSize);
 }
 
 async function main() {
     const canvas = document.getElementById("game-window");
     cursor = new Dim2D(0, 0);
-    
+
     canvas.addEventListener("mousemove", e => {
-        cursor.x = e.offsetX;
-        cursor.y = e.offsetY;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        cursor.x = (e.clientX - rect.left) * scaleX;
+        cursor.y = (e.clientY - rect.top) * scaleY;
     });
 
     game = new Ardent();
