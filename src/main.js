@@ -253,12 +253,12 @@ class Player extends Entity {
 
         if (direction.x != 0) {
             if (direction.x > 0) {
-                this.animation = "right";
+                this.changeAnimation("right");
             } else {
-                this.animation = "left";
+                this.changeAnimation("left");
             }
         } else {
-            this.animation = "idle";
+            this.changeAnimation("idle");
         }
 
         if (keys["ShiftLeft"]) {
@@ -278,7 +278,7 @@ class Player extends Entity {
     }
 
     draw(ctx) {
-        const character = data[this.character]['data'];
+        const character = data[this.character][this.animation || "idle"];
         const int_x = Math.floor(this.position.x);
         const int_y = Math.floor(this.position.y);
         const frame_i = Math.floor(this.frame);
@@ -296,7 +296,11 @@ class Player extends Entity {
         this.frame += 0.1;
 
         if (this.frame >= 8) {
-            this.frame = 0;
+            if (this.animation == "idle") {
+                this.frame = 0;
+            } else {
+                this.frame = 3;
+            }
         }
 
         if (this.isFocused) {
@@ -321,6 +325,15 @@ class Player extends Entity {
                 this.focus_frame -= Math.PI * 2;
             }
         }
+    }
+
+    changeAnimation(animation) {
+        if (animation == this.animation) {
+            return;
+        }
+
+        this.frame = 0;
+        this.animation = animation;
     }
 
     checkBulletCollision() {
