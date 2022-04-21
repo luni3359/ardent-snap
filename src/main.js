@@ -1,5 +1,6 @@
 import { Dim2D, Vector2D } from "./math";
 import { loadAssets, loadInitAssets } from "./media";
+import { SaveData } from "./storage";
 import { print, sleep } from "./utils";
 
 let dpi = window.devicePixelRatio;
@@ -8,13 +9,11 @@ let fps = 0;
 const keys = {};
 let players = [];
 let bullets = [];
-let game;
 
-let show_grid = false;
-let show_fps = true;
 let grid_cache = null;
 let hud_cache = null;
 
+let game, show_grid, show_fps;
 let data, menus, fonts, hud, characters, projectiles;
 
 class Ardent {
@@ -553,6 +552,10 @@ async function main() {
     game.setResolution(640, 480);
     game.setFPS(60);
 
+    show_grid = SaveData.load("displayGrid");
+    show_fps = SaveData.load("displayFps", true);
+    Ardent.debugMode = SaveData.load("debugMode");
+
     [data, menus] = await loadInitAssets();
 
     [fonts, hud, characters, projectiles] = await loadAssets();
@@ -579,14 +582,18 @@ window.addEventListener("keydown", e => {
         case "KeyG":
             e.preventDefault();
             show_grid = !show_grid;
+            SaveData.save("displayGrid", show_grid);
             break;
         case "KeyB":
             e.preventDefault();
             Ardent.debugMode = !Ardent.debugMode;
+            SaveData.save("debugMode", Ardent.debugMode);
             break;
         case "KeyF":
             e.preventDefault();
             show_fps = !show_fps;
+            SaveData.save("displayFps", show_fps);
+            break;
     }
 });
 
