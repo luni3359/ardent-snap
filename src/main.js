@@ -221,9 +221,12 @@ class Player extends Entity {
 
     constructor(x, y, w, h) {
         super(x, y, w || 32, h || 48);
+        this.character = "reimu";
         this.speed = 255;
+
         this.animation = "idle";
         this.frame = 0;
+
         this.isFocused = false;
         this.focus_frame = 0;
     }
@@ -275,7 +278,7 @@ class Player extends Entity {
     }
 
     draw(ctx) {
-        const character = data['reimu']['data'];
+        const character = data[this.character]['data'];
         const int_x = Math.floor(this.position.x);
         const int_y = Math.floor(this.position.y);
         const frame_i = Math.floor(this.frame);
