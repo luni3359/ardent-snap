@@ -291,7 +291,7 @@ class Player extends Entity {
     }
 
     drawAnimation(ctx) {
-        const character = data[this.character][this.animation || "idle"];
+        const character = data['character'][this.character][this.animation || "idle"];
         const x = Math.floor(this.position.x);
         const y = Math.floor(this.position.y);
         const frame_i = Math.floor(this.frame);
@@ -318,7 +318,7 @@ class Player extends Entity {
     }
 
     drawFocusSign(ctx) {
-        const character = data[this.character][this.animation || "idle"];
+        const character = data['character'][this.character][this.animation || "idle"];
         const x = Math.floor(this.position.x);
         const y = Math.floor(this.position.y);
         const sign = data['focus-sign'];
