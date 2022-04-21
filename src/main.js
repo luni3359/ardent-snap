@@ -278,9 +278,17 @@ class Player extends Entity {
     }
 
     draw(ctx) {
+        this.drawAnimation(ctx);
+
+        if (this.isFocused) {
+            this.drawFocusSign(ctx);
+        }
+    }
+
+    drawAnimation(ctx) {
         const character = data[this.character][this.animation || "idle"];
-        const int_x = Math.floor(this.position.x);
-        const int_y = Math.floor(this.position.y);
+        const x = Math.floor(this.position.x);
+        const y = Math.floor(this.position.y);
         const frame_i = Math.floor(this.frame);
 
         if (Ardent.debugMode) {
@@ -288,10 +296,10 @@ class Player extends Entity {
                 ctx.fillStyle = "cyan";
             else
                 ctx.fillStyle = "blue";
-            ctx.fillRect(int_x, int_y, character.w, character.h);
+            ctx.fillRect(x, y, character.w, character.h);
         }
 
-        ctx.drawImage(characters, character.x + character.w * frame_i, character.y, character.w, character.h, int_x, int_y, character.w, character.h);
+        ctx.drawImage(characters, character.x + character.w * frame_i, character.y, character.w, character.h, x, y, character.w, character.h);
 
         this.frame += 0.1;
 
@@ -302,28 +310,31 @@ class Player extends Entity {
                 this.frame = 3;
             }
         }
+    }
 
-        if (this.isFocused) {
-            const sign = data['focus-sign'];
+    drawFocusSign(ctx) {
+        const character = data[this.character][this.animation || "idle"];
+        const x = Math.floor(this.position.x);
+        const y = Math.floor(this.position.y);
+        const sign = data['focus-sign'];
 
-            ctx.setTransform(1, 0, 0, 1, int_x + character.w / 2, int_y + character.h / 2);
-            ctx.rotate(-this.focus_frame);
-            ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
-            ctx.rotate(this.focus_frame * 2);
+        ctx.setTransform(1, 0, 0, 1, x + character.w / 2, y + character.h / 2);
+        ctx.rotate(-this.focus_frame);
+        ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h);
+        ctx.rotate(this.focus_frame * 2);
 
-            if (Ardent.debugMode) {
-                ctx.fillStyle = "#00000055";
-                ctx.fillRect(-sign.w / 2, -sign.h / 2, sign.w, sign.h);
-            }
+        if (Ardent.debugMode) {
+            ctx.fillStyle = "#00000055";
+            ctx.fillRect(-sign.w / 2, -sign.h / 2, sign.w, sign.h);
+        }
 
-            ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h)
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-            this.focus_frame += 0.05;
+        this.focus_frame += 0.05;
 
-            if (this.focus_frame > Math.PI * 2) {
-                this.focus_frame -= Math.PI * 2;
-            }
+        if (this.focus_frame > Math.PI * 2) {
+            this.focus_frame -= Math.PI * 2;
         }
     }
 
