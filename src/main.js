@@ -10,6 +10,8 @@ let players = [];
 let bullets = [];
 let game;
 
+let show_grid = false;
+let show_fps = true;
 let grid_cache = null;
 let hud_cache = null;
 
@@ -83,8 +85,12 @@ class Ardent {
         }
 
         draw_hud(ctx);
-        draw_grid(ctx);
-        draw_temp_fps(ctx);
+
+        if (show_grid)
+            draw_grid(ctx);
+
+        if (show_fps)
+            draw_temp_fps(ctx);
     };
 
     play() {
@@ -564,8 +570,24 @@ async function main() {
 
 
 window.addEventListener("keydown", e => {
-    // e.preventDefault();
+    if (keys[e.code])
+        return;
+
     keys[e.code] = true;
+
+    switch (e.code) {
+        case "KeyG":
+            e.preventDefault();
+            show_grid = !show_grid;
+            break;
+        case "KeyB":
+            e.preventDefault();
+            Ardent.debugMode = !Ardent.debugMode;
+            break;
+        case "KeyF":
+            e.preventDefault();
+            show_fps = !show_fps;
+    }
 });
 
 window.addEventListener("keyup", e => {
