@@ -17,3 +17,20 @@ export function sleep(milliseconds) {
         currentDate = Date.now();
     } while (currentDate - date < milliseconds);
 }
+
+export function castStringType(val) {
+    if (typeof val !== "string") {
+        throw TypeError("'castStringType' received a non-string value.");
+    }
+
+    switch (val.toLowerCase()) {
+        case "true":
+            return true;
+        case "false":
+            return false;
+        case "null":
+            return null;
+        default:
+            throw Exception("'castStringType' received a plain string value.");
+    }
+}

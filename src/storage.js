@@ -1,3 +1,5 @@
+import { castStringType } from "./utils";
+
 export class SaveData {
     static save(key, data) {
         window.sessionStorage[key] = data;
@@ -6,10 +8,18 @@ export class SaveData {
     static load(key, fallback) {
         const data = window.sessionStorage.getItem(key);
 
-        if (data == null)
-            return fallback;
-            
-        return data;
+        if (data == null) {
+            if (fallback !== undefined) {
+                return fallback;
+            }
+            return null;
+        }
+
+        try {
+            return castStringType(data);
+        } catch (e) {
+            return data;
+        }
     }
 
     static delete(key) {
