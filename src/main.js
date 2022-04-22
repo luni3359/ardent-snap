@@ -75,12 +75,21 @@ class Ardent {
         ctx.fillStyle = "#555";
         ctx.fillRect(32, 16, 16 * 24, 16 * 28);
 
+        // Enemies.draw()
+
         for (let i = 0; i < players.length; i++) {
             players[i].draw(ctx);
         }
 
         for (let i = 0; i < bullets.length; i++) {
             bullets[i].draw(ctx);
+        }
+
+        for (let i = 0; i < players.length; i++) {
+            const player = players[i];
+            if (player.isFocused) {
+              player.drawFocusSign(ctx);  
+            }
         }
 
         draw_hud(ctx);
@@ -304,9 +313,9 @@ class Player extends Entity {
     draw(ctx) {
         this.drawAnimation(ctx);
 
-        if (this.isFocused) {
-            this.drawFocusSign(ctx);
-        }
+        // if (this.isFocused) {
+        //     this.drawFocusSign(ctx);
+        // }
     }
 
     drawAnimation(ctx) {
