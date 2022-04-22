@@ -148,11 +148,13 @@ class Bullet extends Entity {
     static #boundary_start = new Dim2D(32, 16);
     static #boundary_end = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
     static #sprite_cache = null;
+    static #cache_mode = null;
 
     constructor(x, y) {
         super(x, y);
         this.topspeed = 250;
         this.radius = 8;
+        this.color = 0;
 
         const randomDirection = new Vector2D(Math.random() - 0.5, Math.random() - 0.5).unit();
         this.speed = randomDirection.multiply(new Vector2D(this.topspeed * Math.random(), this.topspeed * Math.random()));
@@ -166,32 +168,42 @@ class Bullet extends Entity {
     }
 
     draw(ctx) {
-        const size = this.radius * 2;
+        if (Bullet.#sprite_cache && Bullet.#cache_mode != null && Bullet.#cache_mode == Ardent.debugMode) {
+            const size = this.radius * 2;
+            const x = Math.floor(this.position.x - this.radius);
+            const y = Math.floor(this.position.y - this.radius);
 
-        if (Bullet.#sprite_cache) {
-            ctx.drawImage(Bullet.#sprite_cache, this.position.x - this.radius, this.position.y - this.radius, size, size);
+            ctx.drawImage(Bullet.#sprite_cache[this.color], x, y, size, size);
             return;
         }
 
+        this.buildCache(ctx);
+    }
+
+    buildCache(ctx) {
         const x = this.radius;
         const y = this.radius;
+        const size = this.radius * 2;
 
-        const sprite_cache = document.createElement("canvas");
-        Bullet.#sprite_cache = sprite_cache;
-        sprite_cache.width = size;
-        sprite_cache.height = size;
-        const ctx_c = sprite_cache.getContext("2d");
+        Bullet.#sprite_cache = [];
+        Bullet.#cache_mode = Ardent.debugMode;
 
-        if (Ardent.debugMode) {
-            ctx_c.fillStyle = "cyan";
-            ctx_c.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
+        for (let i = 0; i < 16; i++) {
+            const sprite_cache = document.createElement("canvas");
+            sprite_cache.width = size;
+            sprite_cache.height = size;
+            const ctx_c = sprite_cache.getContext("2d");
+
+            if (Ardent.debugMode) {
+                ctx_c.fillStyle = "cyan";
+                ctx_c.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
+            }
+
+            ctx_c.drawImage(projectiles, 10 + size * i, 48, size, size, Math.floor(x - size / 2), Math.floor(y - size / 2), size, size);
+            Bullet.#sprite_cache.push(sprite_cache);
         }
 
-        ctx_c.beginPath();
-        ctx_c.arc(x, y, size / 2, 0, 2 * Math.PI, false);
-        ctx_c.fillStyle = "magenta";
-        ctx_c.fill();
-        ctx.drawImage(sprite_cache, this.position.x, this.position.y, size, size);
+        ctx.drawImage(Bullet.#sprite_cache[this.color], Math.floor(this.position.x - this.radius), Math.floor(this.position.y - this.radius), size, size);
     }
 
     checkBoundCollision() {
@@ -219,6 +231,10 @@ class Bullet extends Entity {
 
         if (bounced) {
             this.speed = new Vector2D(this.speed.x * 1.1, this.speed.y * 1.1);
+
+            if (++this.color >= 16) {
+                this.color = 0;
+            }
         }
     }
 }
@@ -574,9 +590,9 @@ async function main() {
     game.setResolution(640, 480);
     game.setFPS(60);
 
-    show_grid = SaveData.load("displayGrid");
     show_fps = SaveData.load("displayFps", true);
-    Ardent.debugMode = SaveData.load("debugMode");
+    show_grid = SaveData.load("displayGrid", false);
+    Ardent.debugMode = SaveData.load("debugMode", false);
 
     [data, menus] = await loadInitAssets();
 
@@ -585,10 +601,10 @@ async function main() {
     const player = new Player(200, 350);
     players.push(player);
 
-    // for (let i = 0; i < 100; i++) {
-    //     const bullet = new Bullet(220, 250);
-    //     bullets.push(bullet);
-    // }
+    for (let i = 0; i < 100; i++) {
+        const bullet = new Bullet(220, 250);
+        bullets.push(bullet);
+    }
 
     game.play();
 }
