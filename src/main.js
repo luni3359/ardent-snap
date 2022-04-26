@@ -4,7 +4,7 @@ import { SaveData } from "./storage";
 import { print, sleep } from "./utils";
 
 let dpi = window.devicePixelRatio;
-let fps = 0;
+let fps, tps = 0;
 
 const keys = {};
 let players = [];
@@ -13,7 +13,7 @@ let bullets = [];
 let gridCache = null;
 let hudCache = null;
 
-let game, cursor, showGrid, showFps;
+let game, cursor, showGrid, showCounters;
 let data, menus, fonts, hud, characters, projectiles;
 
 class Ardent {
@@ -29,20 +29,21 @@ class Ardent {
     constructor() {
         this.canvas = null;
         this.resolution = new Dim2D();
-        this.fps = 30;
+        this.tickRate = 0;
     }
 
     gameLoop = (currentTime) => {
         requestAnimationFrame(this.gameLoop);
         const dt = (currentTime - this.#lastTime) / 1000;
         this.#lastTime = currentTime;
-        fps = Math.max(dt, this.fps);
+        tps = Math.max(dt, this.tickRate);
+        fps = dt;
 
         this.#accumulator += Math.min(dt, 0.1);
 
-        while (this.#accumulator >= this.fps) {
-            this.#accumulator -= this.fps;
-            this.update(this.fps);
+        while (this.#accumulator >= this.tickRate) {
+            this.#accumulator -= this.tickRate;
+            this.update(this.tickRate);
         }
 
         if (this.#fakeLagEnabled) {
@@ -97,8 +98,8 @@ class Ardent {
         if (showGrid)
             drawGrid(ctx);
 
-        if (showFps)
-            drawTempFps(ctx);
+        if (showCounters)
+            drawCounters(ctx);
 
         if (Ardent.debugMode)
             drawMouse(ctx);
@@ -110,8 +111,8 @@ class Ardent {
         this.gameLoop(performance.now());
     }
 
-    setFPS(n) {
-        this.fps = 1 / n;
+    setTickRate(n) {
+        this.tickRate = 1 / n;
     }
 
     setResolution(w, h) {
@@ -557,19 +558,24 @@ function drawGrid(ctx) {
     ctx.drawImage(gridCache, 0, 0);
 }
 
-function drawTempFps(ctx) {
+function drawCounters(ctx) {
+    const tpsNumber = (1 / tps).toFixed(1);
     const fpsNumber = (1 / fps).toFixed(1);
-    const text = `${fpsNumber}fps`;
-    const x = 414;
+    const tpsLabel = `${tpsNumber}tps`;
+    const fpsLabel = `${fpsNumber}fps`;
+    const x = 415;
     const y = 460;
+    const fontSize = 12;
 
-    ctx.font = "16px Arial";
+    ctx.font = `${fontSize}px Arial`;
     ctx.textAlign = "right";
     ctx.fillStyle = "white";
     ctx.strokeStyle = "black";
     ctx.lineWidth = 3;
-    ctx.strokeText(text, x, y);
-    ctx.fillText(text, x, y);
+    ctx.strokeText(tpsLabel, x, y - fontSize);
+    ctx.fillText(tpsLabel, x, y - fontSize);
+    ctx.strokeText(fpsLabel, x, y);
+    ctx.fillText(fpsLabel, x, y);
 }
 
 function drawMouse(ctx) {
@@ -597,9 +603,9 @@ async function main() {
     game = new Ardent();
     game.setCanvas(canvas);
     game.setResolution(640, 480);
-    game.setFPS(60);
+    game.setTickRate(60);
 
-    showFps = SaveData.load("displayFps", true);
+    showCounters = SaveData.load("displayCounters", true);
     showGrid = SaveData.load("displayGrid", false);
     Ardent.debugMode = SaveData.load("debugMode", false);
 
@@ -638,8 +644,8 @@ window.addEventListener("keydown", e => {
             break;
         case "KeyF":
             e.preventDefault();
-            showFps = !showFps;
-            SaveData.save("displayFps", showFps);
+            showCounters = !showCounters;
+            SaveData.save("displayCounters", showCounters);
             break;
     }
 });
