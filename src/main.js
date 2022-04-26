@@ -61,12 +61,12 @@ class Ardent {
     };
 
     update = (dt) => {
-        for (let i = 0; i < players.length; i++) {
-            players[i].update(dt);
-        }
-
         for (let i = 0; i < bullets.length; i++) {
             bullets[i].update(dt);
+        }
+
+        for (let i = 0; i < players.length; i++) {
+            players[i].update(dt);
         }
     };
 
@@ -171,7 +171,7 @@ class Bullet extends Entity {
     constructor(x, y) {
         super(x, y);
         this.topspeed = 250;
-        this.radius = 8;
+        this.diameter = 16;
         this.color = 0;
 
         const randomDirection = new Vector2D(Math.random() - 0.5, Math.random() - 0.5).unit();
@@ -187,11 +187,11 @@ class Bullet extends Entity {
 
     draw(ctx) {
         if (Bullet.#spriteCache && Bullet.#cacheMode != null && Bullet.#cacheMode == Ardent.debugMode) {
-            const size = this.radius * 2;
-            const x = Math.floor(this.position.x - this.radius);
-            const y = Math.floor(this.position.y - this.radius);
+            const radius = this.diameter / 2;
+            const x = Math.floor(this.position.x - radius);
+            const y = Math.floor(this.position.y - radius);
 
-            ctx.drawImage(Bullet.#spriteCache[this.color], x, y, size, size);
+            ctx.drawImage(Bullet.#spriteCache, this.diameter * this.color, 0, this.diameter, this.diameter, x, y, this.diameter, this.diameter);
             return;
         }
 
@@ -199,52 +199,53 @@ class Bullet extends Entity {
     }
 
     buildCache(ctx) {
-        const x = this.radius;
-        const y = this.radius;
-        const size = this.radius * 2;
-
-        Bullet.#spriteCache = [];
+        const numberOfFrames = 16;
+        const spriteXOffset = 10;
+        const spriteYOffset = 48;
+        const size = this.diameter;
+        
+        Bullet.#spriteCache = document.createElement("canvas");
+        Bullet.#spriteCache.width = size * numberOfFrames;
+        Bullet.#spriteCache.height = size;
         Bullet.#cacheMode = Ardent.debugMode;
+        const ctxC = Bullet.#spriteCache.getContext("2d");
 
-        for (let i = 0; i < 16; i++) {
-            const spriteCache = document.createElement("canvas");
-            spriteCache.width = size;
-            spriteCache.height = size;
-            const ctxC = spriteCache.getContext("2d");
+        for (let i = 0; i < numberOfFrames; i++) {
+            const x = this.diameter * i;
+
 
             if (Ardent.debugMode) {
                 ctxC.fillStyle = "cyan";
-                ctxC.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
+                ctxC.fillRect(x, 0, size, size);
             }
-
-            ctxC.drawImage(projectiles, 10 + size * i, 48, size, size, Math.floor(x - size / 2), Math.floor(y - size / 2), size, size);
-            Bullet.#spriteCache.push(spriteCache);
+            ctxC.drawImage(projectiles, spriteXOffset + x, spriteYOffset, size, size, x, 0, size, size);
         }
 
-        ctx.drawImage(Bullet.#spriteCache[this.color], Math.floor(this.position.x - this.radius), Math.floor(this.position.y - this.radius), size, size);
+        this.draw(ctx);
     }
 
     checkBoundCollision() {
         let bounced = false;
+        const radius = this.diameter / 2;
 
-        if (this.position.x + this.radius > Bullet.#boundaryEnd.x) {
+        if (this.position.x + radius > Bullet.#boundaryEnd.x) {
             bounced = true;
             this.speed.x = -this.speed.x;
-            this.position.x = Bullet.#boundaryEnd.x - this.radius;
-        } else if (this.position.x - this.radius < Bullet.#boundaryStart.x) {
+            this.position.x = Bullet.#boundaryEnd.x - radius;
+        } else if (this.position.x - radius < Bullet.#boundaryStart.x) {
             bounced = true;
             this.speed.x = -this.speed.x;
-            this.position.x = Bullet.#boundaryStart.x + this.radius;
+            this.position.x = Bullet.#boundaryStart.x + radius;
         }
 
-        if (this.position.y + this.radius > Bullet.#boundaryEnd.y) {
+        if (this.position.y + radius > Bullet.#boundaryEnd.y) {
             bounced = true;
             this.speed.y = -this.speed.y;
-            this.position.y = Bullet.#boundaryEnd.y - this.radius;
-        } else if (this.position.y - this.radius < Bullet.#boundaryStart.y) {
+            this.position.y = Bullet.#boundaryEnd.y - radius;
+        } else if (this.position.y - radius < Bullet.#boundaryStart.y) {
             bounced = true;
             this.speed.y = -this.speed.y;
-            this.position.y = Bullet.#boundaryStart.y + this.radius;
+            this.position.y = Bullet.#boundaryStart.y + radius;
         }
 
         if (bounced) {
