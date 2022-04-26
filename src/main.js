@@ -21,6 +21,7 @@ class Ardent {
 
     #lastTime = 0;
     #accumulator = 0;
+    #timeScale = 1000;
     #ctx = null;
 
     #alphaEnabled = false;
@@ -36,7 +37,7 @@ class Ardent {
 
     gameLoop = (currentTime) => {
         requestAnimationFrame(this.gameLoop);
-        const dt = (currentTime - this.#lastTime) / 1000;
+        const dt = (currentTime - this.#lastTime) / this.#timeScale;
         this.#lastTime = currentTime;
         tps = Math.max(dt, this.tickRate);
         fps = dt;
@@ -150,16 +151,14 @@ class Ardent {
 
 class Entity {
     constructor(x, y, w, h) {
-        this.position = new Vector2D(x, y);
-        this.size = new Dim2D(w, h);
+        this.position = new Vector2D(x || 0, y || 0);
+        this.rotation = new Vector2D(x || 0, y || 0);
+        this.scale = new Dim2D(w || 1, h || 1);
     }
 
     update(dt) { }
 
-    draw(ctx) {
-        ctx.fillStyle = "black";
-        ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y);
-    }
+    draw(ctx, dt) { }
 }
 
 class Bullet extends Entity {
@@ -203,7 +202,7 @@ class Bullet extends Entity {
         const spriteXOffset = 10;
         const spriteYOffset = 48;
         const size = this.diameter;
-        
+
         Bullet.#spriteCache = document.createElement("canvas");
         Bullet.#spriteCache.width = size * numberOfFrames;
         Bullet.#spriteCache.height = size;
@@ -322,14 +321,10 @@ class Player extends Entity {
 
     draw(ctx, dt) {
         this.drawAnimation(ctx, dt);
-
-        // if (this.isFocused) {
-        //     this.drawFocusSign(ctx);
-        // }
     }
 
     drawAnimation(ctx, dt) {
-        const character = data['character'][this.character][this.animation || "idle"];
+        const char = data['character'][this.character][this.animation || "idle"];
         const x = Math.floor(this.position.x);
         const y = Math.floor(this.position.y);
         const frameI = Math.floor(this.frame);
@@ -339,10 +334,10 @@ class Player extends Entity {
                 ctx.fillStyle = "cyan";
             else
                 ctx.fillStyle = "blue";
-            ctx.fillRect(x, y, character.w, character.h);
+            ctx.fillRect(x, y, char.w, char.h);
         }
 
-        ctx.drawImage(characters, character.x + character.w * frameI, character.y, character.w, character.h, x, y, character.w, character.h);
+        ctx.drawImage(characters, char.x + char.w * frameI, char.y, char.w, char.h, x, y, char.w, char.h);
 
         // changes 12 times a second
         this.frame += 12 * dt;
@@ -396,7 +391,7 @@ class Player extends Entity {
             const bullet = bullets[i];
 
             if (this.position.x < bullet.position.x && this.position.y < bullet.position.y) {
-                if (this.position.x + this.size.x > bullet.position.x && this.position.y + this.size.y > bullet.position.y) {
+                if (this.position.x + this.scale.x > bullet.position.x && this.position.y + this.scale.y > bullet.position.y) {
                     bullet.speed = new Vector2D();
                     // bullets.splice(i,1);
                 }
@@ -405,14 +400,14 @@ class Player extends Entity {
     }
 
     checkBoundCollision() {
-        if (this.position.x + this.size.x > Player.#boundaryEnd.x) {
-            this.position.x = Player.#boundaryEnd.x - this.size.x;
+        if (this.position.x + this.scale.x > Player.#boundaryEnd.x) {
+            this.position.x = Player.#boundaryEnd.x - this.scale.x;
         } else if (this.position.x < Player.#boundaryStart.x) {
             this.position.x = Player.#boundaryStart.x;
         }
 
-        if (this.position.y + this.size.y > Player.#boundaryEnd.y) {
-            this.position.y = Player.#boundaryEnd.y - this.size.y;
+        if (this.position.y + this.scale.y > Player.#boundaryEnd.y) {
+            this.position.y = Player.#boundaryEnd.y - this.scale.y;
         } else if (this.position.y < Player.#boundaryStart.y) {
             this.position.y = Player.#boundaryStart.y;
         }
