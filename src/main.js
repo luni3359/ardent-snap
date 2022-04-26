@@ -23,6 +23,8 @@ class Ardent {
     #accumulator = 0;
     #ctx = null;
 
+    #alphaEnabled = false;
+
     #fakeLagTimer = 0;
     #fakeLagEnabled = false;
 
@@ -106,9 +108,10 @@ class Ardent {
     };
 
     play() {
-        this.#ctx = this.canvas.getContext("2d");
-        this.#lastTime = performance.now();
-        this.gameLoop(performance.now());
+        const currentTime = performance.now();
+        this.#ctx = this.canvas.getContext("2d", { alpha: this.#alphaEnabled });
+        this.#lastTime = currentTime;
+        this.gameLoop(currentTime);
     }
 
     setTickRate(n) {
@@ -137,6 +140,11 @@ class Ardent {
         this.canvas.style.height = `${this.resolution.y}px`;
         this.canvas.width = this.resolution.x;
         this.canvas.height = this.resolution.y;
+    }
+
+    // Enable this if you want to display what's through the canvas
+    enableAlpha(bool) {
+        this.#alphaEnabled = bool;
     }
 }
 
