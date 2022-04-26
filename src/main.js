@@ -57,7 +57,7 @@ class Ardent {
             }
         }
 
-        this.draw(this.#ctx);
+        this.draw(this.#ctx, dt);
     };
 
     update = (dt) => {
@@ -70,7 +70,7 @@ class Ardent {
         }
     };
 
-    draw = (ctx) => {
+    draw = (ctx, dt) => {
         ctx.clearRect(0, 0, game.resolution.x, game.resolution.y);
 
         drawLoadingScreen(ctx);
@@ -81,7 +81,7 @@ class Ardent {
         // Enemies.draw()
 
         for (let i = 0; i < players.length; i++) {
-            players[i].draw(ctx);
+            players[i].draw(ctx, dt);
         }
 
         for (let i = 0; i < bullets.length; i++) {
@@ -91,7 +91,7 @@ class Ardent {
         for (let i = 0; i < players.length; i++) {
             const player = players[i];
             if (player.isFocused) {
-                player.drawFocusSign(ctx);
+                player.drawFocusSign(ctx, dt);
             }
         }
 
@@ -319,15 +319,15 @@ class Player extends Entity {
         this.checkBoundCollision();
     }
 
-    draw(ctx) {
-        this.drawAnimation(ctx);
+    draw(ctx, dt) {
+        this.drawAnimation(ctx, dt);
 
         // if (this.isFocused) {
         //     this.drawFocusSign(ctx);
         // }
     }
 
-    drawAnimation(ctx) {
+    drawAnimation(ctx, dt) {
         const character = data['character'][this.character][this.animation || "idle"];
         const x = Math.floor(this.position.x);
         const y = Math.floor(this.position.y);
@@ -343,18 +343,19 @@ class Player extends Entity {
 
         ctx.drawImage(characters, character.x + character.w * frameI, character.y, character.w, character.h, x, y, character.w, character.h);
 
-        this.frame += 0.1;
+        // changes 12 times a second
+        this.frame += 12 * dt;
 
         if (this.frame >= 8) {
             if (this.animation == "idle") {
-                this.frame = 0;
+                this.frame -= 8;
             } else {
                 this.frame = 3;
             }
         }
     }
 
-    drawFocusSign(ctx) {
+    drawFocusSign(ctx, dt) {
         const character = data['character'][this.character][this.animation || "idle"];
         const x = Math.floor(this.position.x);
         const y = Math.floor(this.position.y);
@@ -362,7 +363,7 @@ class Player extends Entity {
 
         ctx.setTransform(1, 0, 0, 1, x + character.w / 2, y + character.h / 2);
         ctx.rotate(-this.focusFrame);
-        ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h);
+        ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, -sign.w / 2, -sign.h / 2, sign.w, sign.h);
         ctx.rotate(this.focusFrame * 2);
 
         if (Ardent.debugMode) {
@@ -370,10 +371,10 @@ class Player extends Entity {
             ctx.fillRect(-sign.w / 2, -sign.h / 2, sign.w, sign.h);
         }
 
-        ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h);
+        ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, -sign.w / 2, -sign.h / 2, sign.w, sign.h);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-        this.focusFrame += 0.05;
+        this.focusFrame += 6 * dt;
 
         if (this.focusFrame > Math.PI * 2) {
             this.focusFrame -= Math.PI * 2;
