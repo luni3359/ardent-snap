@@ -10,21 +10,21 @@ const keys = {};
 let players = [];
 let bullets = [];
 
-let grid_cache = null;
-let hud_cache = null;
+let gridCache = null;
+let hudCache = null;
 
-let game, cursor, show_grid, show_fps;
+let game, cursor, showGrid, showFps;
 let data, menus, fonts, hud, characters, projectiles;
 
 class Ardent {
     static debugMode = false;
 
-    #last_time = 0;
+    #lastTime = 0;
     #accumulator = 0;
     #ctx = null;
 
-    #fake_lag_timer = 0;
-    #fake_lag_enabled = false;
+    #fakeLagTimer = 0;
+    #fakeLagEnabled = false;
 
     constructor() {
         this.canvas = null;
@@ -32,10 +32,10 @@ class Ardent {
         this.fps = 30;
     }
 
-    gameLoop = (current_time) => {
+    gameLoop = (currentTime) => {
         requestAnimationFrame(this.gameLoop);
-        const dt = (current_time - this.#last_time) / 1000;
-        this.#last_time = current_time;
+        const dt = (currentTime - this.#lastTime) / 1000;
+        this.#lastTime = currentTime;
         fps = Math.max(dt, this.fps);
 
         this.#accumulator += Math.min(dt, 0.1);
@@ -45,10 +45,10 @@ class Ardent {
             this.update(this.fps);
         }
 
-        if (this.#fake_lag_enabled) {
-            this.#fake_lag_timer++;
-            if (this.#fake_lag_timer > 500) {
-                this.#fake_lag_timer = 0;
+        if (this.#fakeLagEnabled) {
+            this.#fakeLagTimer++;
+            if (this.#fakeLagTimer > 500) {
+                this.#fakeLagTimer = 0;
                 sleep(500);
                 print("whoops");
             }
@@ -70,7 +70,7 @@ class Ardent {
     draw = (ctx) => {
         ctx.clearRect(0, 0, game.resolution.x, game.resolution.y);
 
-        draw_loading_screen(ctx);
+        drawLoadingScreen(ctx);
 
         ctx.fillStyle = "#555";
         ctx.fillRect(32, 16, 16 * 24, 16 * 28);
@@ -88,25 +88,25 @@ class Ardent {
         for (let i = 0; i < players.length; i++) {
             const player = players[i];
             if (player.isFocused) {
-              player.drawFocusSign(ctx);  
+                player.drawFocusSign(ctx);
             }
         }
 
-        draw_hud(ctx);
+        drawHud(ctx);
 
-        if (show_grid)
-            draw_grid(ctx);
+        if (showGrid)
+            drawGrid(ctx);
 
-        if (show_fps)
-            draw_temp_fps(ctx);
+        if (showFps)
+            drawTempFps(ctx);
 
         if (Ardent.debugMode)
-            draw_mouse(ctx);
+            drawMouse(ctx);
     };
 
     play() {
         this.#ctx = this.canvas.getContext("2d");
-        this.#last_time = performance.now();
+        this.#lastTime = performance.now();
         this.gameLoop(performance.now());
     }
 
@@ -154,10 +154,10 @@ class Entity {
 }
 
 class Bullet extends Entity {
-    static #boundary_start = new Dim2D(32, 16);
-    static #boundary_end = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
-    static #sprite_cache = null;
-    static #cache_mode = null;
+    static #boundaryStart = new Dim2D(32, 16);
+    static #boundaryEnd = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
+    static #spriteCache = null;
+    static #cacheMode = null;
 
     constructor(x, y) {
         super(x, y);
@@ -177,12 +177,12 @@ class Bullet extends Entity {
     }
 
     draw(ctx) {
-        if (Bullet.#sprite_cache && Bullet.#cache_mode != null && Bullet.#cache_mode == Ardent.debugMode) {
+        if (Bullet.#spriteCache && Bullet.#cacheMode != null && Bullet.#cacheMode == Ardent.debugMode) {
             const size = this.radius * 2;
             const x = Math.floor(this.position.x - this.radius);
             const y = Math.floor(this.position.y - this.radius);
 
-            ctx.drawImage(Bullet.#sprite_cache[this.color], x, y, size, size);
+            ctx.drawImage(Bullet.#spriteCache[this.color], x, y, size, size);
             return;
         }
 
@@ -194,48 +194,48 @@ class Bullet extends Entity {
         const y = this.radius;
         const size = this.radius * 2;
 
-        Bullet.#sprite_cache = [];
-        Bullet.#cache_mode = Ardent.debugMode;
+        Bullet.#spriteCache = [];
+        Bullet.#cacheMode = Ardent.debugMode;
 
         for (let i = 0; i < 16; i++) {
-            const sprite_cache = document.createElement("canvas");
-            sprite_cache.width = size;
-            sprite_cache.height = size;
-            const ctx_c = sprite_cache.getContext("2d");
+            const spriteCache = document.createElement("canvas");
+            spriteCache.width = size;
+            spriteCache.height = size;
+            const ctxC = spriteCache.getContext("2d");
 
             if (Ardent.debugMode) {
-                ctx_c.fillStyle = "cyan";
-                ctx_c.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
+                ctxC.fillStyle = "cyan";
+                ctxC.fillRect(-x, -y, size * 2 * 2, size * 2 * 2);
             }
 
-            ctx_c.drawImage(projectiles, 10 + size * i, 48, size, size, Math.floor(x - size / 2), Math.floor(y - size / 2), size, size);
-            Bullet.#sprite_cache.push(sprite_cache);
+            ctxC.drawImage(projectiles, 10 + size * i, 48, size, size, Math.floor(x - size / 2), Math.floor(y - size / 2), size, size);
+            Bullet.#spriteCache.push(spriteCache);
         }
 
-        ctx.drawImage(Bullet.#sprite_cache[this.color], Math.floor(this.position.x - this.radius), Math.floor(this.position.y - this.radius), size, size);
+        ctx.drawImage(Bullet.#spriteCache[this.color], Math.floor(this.position.x - this.radius), Math.floor(this.position.y - this.radius), size, size);
     }
 
     checkBoundCollision() {
         let bounced = false;
 
-        if (this.position.x + this.radius > Bullet.#boundary_end.x) {
+        if (this.position.x + this.radius > Bullet.#boundaryEnd.x) {
             bounced = true;
             this.speed.x = -this.speed.x;
-            this.position.x = Bullet.#boundary_end.x - this.radius;
-        } else if (this.position.x - this.radius < Bullet.#boundary_start.x) {
+            this.position.x = Bullet.#boundaryEnd.x - this.radius;
+        } else if (this.position.x - this.radius < Bullet.#boundaryStart.x) {
             bounced = true;
             this.speed.x = -this.speed.x;
-            this.position.x = Bullet.#boundary_start.x + this.radius;
+            this.position.x = Bullet.#boundaryStart.x + this.radius;
         }
 
-        if (this.position.y + this.radius > Bullet.#boundary_end.y) {
+        if (this.position.y + this.radius > Bullet.#boundaryEnd.y) {
             bounced = true;
             this.speed.y = -this.speed.y;
-            this.position.y = Bullet.#boundary_end.y - this.radius;
-        } else if (this.position.y - this.radius < Bullet.#boundary_start.y) {
+            this.position.y = Bullet.#boundaryEnd.y - this.radius;
+        } else if (this.position.y - this.radius < Bullet.#boundaryStart.y) {
             bounced = true;
             this.speed.y = -this.speed.y;
-            this.position.y = Bullet.#boundary_start.y + this.radius;
+            this.position.y = Bullet.#boundaryStart.y + this.radius;
         }
 
         if (bounced) {
@@ -249,8 +249,8 @@ class Bullet extends Entity {
 }
 
 class Player extends Entity {
-    static #boundary_start = new Dim2D(32, 16);
-    static #boundary_end = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
+    static #boundaryStart = new Dim2D(32, 16);
+    static #boundaryEnd = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
 
     constructor(x, y, w, h) {
         super(x, y, w || 32, h || 48);
@@ -261,12 +261,12 @@ class Player extends Entity {
         this.frame = 0;
 
         this.isFocused = false;
-        this.focus_frame = 0;
+        this.focusFrame = 0;
     }
 
     update(dt) {
         const direction = new Vector2D();
-        let focus_modifier = 1;
+        let focusModifier = 1;
 
         if (keys["KeyA"] || keys["ArrowLeft"]) {
             direction.x -= 1;
@@ -296,15 +296,15 @@ class Player extends Entity {
 
         if (keys["ShiftLeft"]) {
             this.isFocused = true;
-            focus_modifier = 0.5;
+            focusModifier = 0.5;
         } else {
             this.isFocused = false;
         }
 
         direction.normalize();
 
-        this.position.x += this.speed * focus_modifier * direction.x * dt;
-        this.position.y += this.speed * focus_modifier * direction.y * dt;
+        this.position.x += this.speed * focusModifier * direction.x * dt;
+        this.position.y += this.speed * focusModifier * direction.y * dt;
 
         this.checkBulletCollision();
         this.checkBoundCollision();
@@ -322,17 +322,17 @@ class Player extends Entity {
         const character = data['character'][this.character][this.animation || "idle"];
         const x = Math.floor(this.position.x);
         const y = Math.floor(this.position.y);
-        const frame_i = Math.floor(this.frame);
+        const frameI = Math.floor(this.frame);
 
         if (Ardent.debugMode) {
-            if (frame_i == 0)
+            if (frameI == 0)
                 ctx.fillStyle = "cyan";
             else
                 ctx.fillStyle = "blue";
             ctx.fillRect(x, y, character.w, character.h);
         }
 
-        ctx.drawImage(characters, character.x + character.w * frame_i, character.y, character.w, character.h, x, y, character.w, character.h);
+        ctx.drawImage(characters, character.x + character.w * frameI, character.y, character.w, character.h, x, y, character.w, character.h);
 
         this.frame += 0.1;
 
@@ -352,9 +352,9 @@ class Player extends Entity {
         const sign = data['focus-sign'];
 
         ctx.setTransform(1, 0, 0, 1, x + character.w / 2, y + character.h / 2);
-        ctx.rotate(-this.focus_frame);
+        ctx.rotate(-this.focusFrame);
         ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h);
-        ctx.rotate(this.focus_frame * 2);
+        ctx.rotate(this.focusFrame * 2);
 
         if (Ardent.debugMode) {
             ctx.fillStyle = "#00000055";
@@ -364,10 +364,10 @@ class Player extends Entity {
         ctx.drawImage(projectiles, sign.x, sign.y, sign.w, sign.h, - sign.w / 2, -sign.h / 2, sign.w, sign.h);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-        this.focus_frame += 0.05;
+        this.focusFrame += 0.05;
 
-        if (this.focus_frame > Math.PI * 2) {
-            this.focus_frame -= Math.PI * 2;
+        if (this.focusFrame > Math.PI * 2) {
+            this.focusFrame -= Math.PI * 2;
         }
     }
 
@@ -394,21 +394,21 @@ class Player extends Entity {
     }
 
     checkBoundCollision() {
-        if (this.position.x + this.size.x > Player.#boundary_end.x) {
-            this.position.x = Player.#boundary_end.x - this.size.x;
-        } else if (this.position.x < Player.#boundary_start.x) {
-            this.position.x = Player.#boundary_start.x;
+        if (this.position.x + this.size.x > Player.#boundaryEnd.x) {
+            this.position.x = Player.#boundaryEnd.x - this.size.x;
+        } else if (this.position.x < Player.#boundaryStart.x) {
+            this.position.x = Player.#boundaryStart.x;
         }
 
-        if (this.position.y + this.size.y > Player.#boundary_end.y) {
-            this.position.y = Player.#boundary_end.y - this.size.y;
-        } else if (this.position.y < Player.#boundary_start.y) {
-            this.position.y = Player.#boundary_start.y;
+        if (this.position.y + this.size.y > Player.#boundaryEnd.y) {
+            this.position.y = Player.#boundaryEnd.y - this.size.y;
+        } else if (this.position.y < Player.#boundaryStart.y) {
+            this.position.y = Player.#boundaryStart.y;
         }
     }
 }
 
-function draw_loading_screen(ctx) {
+function drawLoadingScreen(ctx) {
     const lsc = data['loading-screen'];
     const lgw = data['loading-girls-waiting'];
     const lnl = data['loading-now-loading'];
@@ -421,35 +421,35 @@ function draw_loading_screen(ctx) {
     ctx.drawImage(menus, lnl.x, lnl.y, lnl.w, lnl.h, 474, 394, 125, 30);
 }
 
-function draw_hud(ctx) {
-    if (hud_cache) {
-        ctx.drawImage(hud_cache, 0, 0);
+function drawHud(ctx) {
+    if (hudCache) {
+        ctx.drawImage(hudCache, 0, 0);
         return;
     }
 
-    hud_cache = document.createElement("canvas");
-    hud_cache.width = game.canvas.width;
-    hud_cache.height = game.canvas.height;
+    hudCache = document.createElement("canvas");
+    hudCache.width = game.canvas.width;
+    hudCache.height = game.canvas.height;
 
     const hudR = data['hud-background-right'];
     const hudL = data['hud-background-left'];
     const hudT = data['hud-background-top'];
     const hudB = data['hud-background-bottom'];
-    const ctx_c = hud_cache.getContext("2d");
+    const ctxC = hudCache.getContext("2d");
 
     // right piece
-    ctx_c.drawImage(hud, hudR.x, hudR.y, hudR.w, hudR.h, game.resolution.x - hudR.w, 0, hudR.w, hudR.h);
+    ctxC.drawImage(hud, hudR.x, hudR.y, hudR.w, hudR.h, game.resolution.x - hudR.w, 0, hudR.w, hudR.h);
     // left piece
-    ctx_c.drawImage(hud, hudL.x, hudL.y, hudL.w, hudL.h, 0, 0, hudL.w, hudL.h);
+    ctxC.drawImage(hud, hudL.x, hudL.y, hudL.w, hudL.h, 0, 0, hudL.w, hudL.h);
     // top piece
-    ctx_c.drawImage(hud, hudT.x, hudT.y, hudT.w, hudT.h, hudL.w, 0, hudT.w, hudT.h);
+    ctxC.drawImage(hud, hudT.x, hudT.y, hudT.w, hudT.h, hudL.w, 0, hudT.w, hudT.h);
     // bottom piece
-    ctx_c.drawImage(hud, hudB.x, hudB.y, hudB.w, hudB.h, hudL.w, game.resolution.y - hudB.h, hudB.w, hudB.h);
+    ctxC.drawImage(hud, hudB.x, hudB.y, hudB.w, hudB.h, hudL.w, game.resolution.y - hudB.h, hudB.w, hudB.h);
 
-    ctx.drawImage(hud_cache, 0, 0);
+    ctx.drawImage(hudCache, 0, 0);
 }
 
-function trace_dotted_axis(ctx, dim, lockedAxis, lineSpacing, dashLength) {
+function traceDottedAxis(ctx, dim, lockedAxis, lineSpacing, dashLength) {
     let variableAxis, fixedAxis;
 
     switch (lockedAxis) {
@@ -486,7 +486,7 @@ function trace_dotted_axis(ctx, dim, lockedAxis, lineSpacing, dashLength) {
     }
 }
 
-function trace_dotted_frame(ctx, dim, lockedAxis, lineSpacing, dashLength) {
+function traceDottedFrame(ctx, dim, lockedAxis, lineSpacing, dashLength) {
     let variableAxis, fixedAxis;
 
     switch (lockedAxis) {
@@ -530,36 +530,36 @@ function trace_dotted_frame(ctx, dim, lockedAxis, lineSpacing, dashLength) {
     }
 }
 
-function draw_grid(ctx) {
-    if (grid_cache) {
-        ctx.drawImage(grid_cache, 0, 0);
+function drawGrid(ctx) {
+    if (gridCache) {
+        ctx.drawImage(gridCache, 0, 0);
         return;
     }
 
-    grid_cache = document.createElement("canvas");
-    const grid_size = new Dim2D(40, 30);
-    const square_size = 16;
-    const dashes_per_square = 4;
-    const dash_length = square_size / dashes_per_square;
+    gridCache = document.createElement("canvas");
+    const gridSize = new Dim2D(40, 30);
+    const squareSize = 16;
+    const dashesPerSquare = 4;
+    const dashLength = squareSize / dashesPerSquare;
 
-    grid_cache.width = grid_size.x * square_size;
-    grid_cache.height = grid_size.y * square_size;
-    const ctx_c = grid_cache.getContext("2d");
+    gridCache.width = gridSize.x * squareSize;
+    gridCache.height = gridSize.y * squareSize;
+    const ctxC = gridCache.getContext("2d");
 
     // draw grid lines
-    trace_dotted_axis(ctx_c, grid_size, "x", square_size, dash_length);
-    trace_dotted_axis(ctx_c, grid_size, "y", square_size, dash_length);
+    traceDottedAxis(ctxC, gridSize, "x", squareSize, dashLength);
+    traceDottedAxis(ctxC, gridSize, "y", squareSize, dashLength);
 
     // draw gold frame
-    trace_dotted_frame(ctx_c, grid_size, "x", square_size, dash_length);
-    trace_dotted_frame(ctx_c, grid_size, "y", square_size, dash_length);
+    traceDottedFrame(ctxC, gridSize, "x", squareSize, dashLength);
+    traceDottedFrame(ctxC, gridSize, "y", squareSize, dashLength);
 
-    ctx.drawImage(grid_cache, 0, 0);
+    ctx.drawImage(gridCache, 0, 0);
 }
 
-function draw_temp_fps(ctx) {
-    const fps_number = (1 / fps).toFixed(1);
-    const text = `${fps_number}fps`;
+function drawTempFps(ctx) {
+    const fpsNumber = (1 / fps).toFixed(1);
+    const text = `${fpsNumber}fps`;
     const x = 414;
     const y = 460;
 
@@ -572,7 +572,7 @@ function draw_temp_fps(ctx) {
     ctx.fillText(text, x, y);
 }
 
-function draw_mouse(ctx) {
+function drawMouse(ctx) {
     const boxSize = 20;
     const x = Math.floor(cursor.x - boxSize);
     const y = Math.floor(cursor.y - boxSize);
@@ -599,8 +599,8 @@ async function main() {
     game.setResolution(640, 480);
     game.setFPS(60);
 
-    show_fps = SaveData.load("displayFps", true);
-    show_grid = SaveData.load("displayGrid", false);
+    showFps = SaveData.load("displayFps", true);
+    showGrid = SaveData.load("displayGrid", false);
     Ardent.debugMode = SaveData.load("debugMode", false);
 
     [data, menus] = await loadInitAssets();
@@ -628,8 +628,8 @@ window.addEventListener("keydown", e => {
     switch (e.code) {
         case "KeyG":
             e.preventDefault();
-            show_grid = !show_grid;
-            SaveData.save("displayGrid", show_grid);
+            showGrid = !showGrid;
+            SaveData.save("displayGrid", showGrid);
             break;
         case "KeyB":
             e.preventDefault();
@@ -638,8 +638,8 @@ window.addEventListener("keydown", e => {
             break;
         case "KeyF":
             e.preventDefault();
-            show_fps = !show_fps;
-            SaveData.save("displayFps", show_fps);
+            showFps = !showFps;
+            SaveData.save("displayFps", showFps);
             break;
     }
 });
