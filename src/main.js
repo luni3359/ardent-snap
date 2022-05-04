@@ -592,6 +592,16 @@ function drawMouse(ctx) {
     ctx.fillRect(x, y, boxSize, boxSize);
 }
 
+function loadingScene() {
+    const player = new Player(200, 350);
+    players.push(player);
+
+    for (let i = 0; i < 100; i++) {
+        const bullet = new Bullet(220, 250);
+        bullets.push(bullet);
+    }
+}
+
 async function main() {
     const canvas = document.getElementById("game-window");
     cursor = new Dim2D(0, 0);
@@ -618,15 +628,9 @@ async function main() {
 
     [fonts, hud, characters, projectiles] = await loadAssets();
 
-    const player = new Player(200, 350);
-    players.push(player);
-
-    for (let i = 0; i < 100; i++) {
-        const bullet = new Bullet(220, 250);
-        bullets.push(bullet);
-    }
-
     game.play();
+
+    loadingScene();
 }
 
 
