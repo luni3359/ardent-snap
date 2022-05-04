@@ -7,8 +7,6 @@ let dpi = window.devicePixelRatio;
 let fps, tps = 0;
 
 const keys = {};
-let players = [];
-let bullets = [];
 
 let gridCache = null;
 let hudCache = null;
@@ -33,6 +31,7 @@ class Ardent {
         this.canvas = null;
         this.resolution = new Dim2D();
         this.tickRate = 0;
+        this.sceneManager = new SceneManager();
     }
 
     gameLoop = (currentTime) => {
@@ -592,13 +591,47 @@ function drawMouse(ctx) {
     ctx.fillRect(x, y, boxSize, boxSize);
 }
 
-function loadingScene() {
-    const player = new Player(200, 350);
-    players.push(player);
 
-    for (let i = 0; i < 100; i++) {
-        const bullet = new Bullet(220, 250);
-        bullets.push(bullet);
+class Scene {
+    #entityList = []
+
+    update(dt) {
+        for (let i = 0; i < this.#entityList.length; i++) {
+            const entitySublist = this.#entityList[i];
+            for (let j = 0; j < entitySublist; j++) {
+                const entity = entitySublist[j];
+                entity.update(dt);
+            }
+        }
+    }
+    draw(ctx, dt) {
+        for (let i = 0; i < this.#entityList.length; i++) {
+            const entitySublist = this.#entityList[i];
+            for (let j = 0; j < entitySublist; j++) {
+                const entity = entitySublist[j];
+                entity.draw(ctx, dt);
+            }
+        }
+    }
+
+    pushEntities(entities) {
+        this.#entityList.push(entities);
+    }
+}
+
+class SceneManager {
+    static #currentScene;
+
+    static update(dt) {
+        SceneManager.#currentScene.update(dt);
+    }
+
+    static draw(ctx, dt) {
+        SceneManager.#currentScene.draw(ctx, dt);
+    }
+
+    static loadScene(scene) {
+        SceneManager.#currentScene = scene;
     }
 }
 
@@ -628,9 +661,22 @@ async function main() {
 
     [fonts, hud, characters, projectiles] = await loadAssets();
 
-    game.play();
+    const players = []
+    const player = new Player(200, 350);
+    players.push(player);
 
-    loadingScene();
+    const bullets = [];
+    for (let i = 0; i < 100; i++) {
+        const bullet = new Bullet(220, 250);
+        bullets.push(bullet);
+    }
+
+    const scene = new Scene();
+    scene.pushEntities(players);
+    scene.pushEntities(bullets);
+    SceneManager.loadScene(scene)
+    
+    game.play();
 }
 
 
