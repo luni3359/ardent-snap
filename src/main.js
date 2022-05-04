@@ -1,7 +1,7 @@
+import { loadAssets, loadInitAssets } from "./ardent/assets";
 import { Ardent } from "./ardent/engine";
 import "./ardent/input";
 import { Dim2D } from "./ardent/math";
-import { loadAssets, loadInitAssets } from "./ardent/media";
 import { SceneManager } from "./ardent/scenes";
 import { StorageManager } from "./ardent/storage";
 import { TestScene } from "./scenes/testScene";
