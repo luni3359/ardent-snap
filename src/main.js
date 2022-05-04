@@ -591,8 +591,7 @@ function drawMouse(ctx) {
     ctx.fillRect(x, y, boxSize, boxSize);
 }
 
-
-class Scene {
+class Layer {
     #entityList = []
 
     update(dt) {
@@ -604,6 +603,7 @@ class Scene {
             }
         }
     }
+
     draw(ctx, dt) {
         for (let i = 0; i < this.#entityList.length; i++) {
             const entitySublist = this.#entityList[i];
@@ -616,6 +616,29 @@ class Scene {
 
     pushEntities(entities) {
         this.#entityList.push(entities);
+    }
+}
+
+class Scene {
+    #layers = []
+
+    update(dt) {
+        for (let i = 0; i < this.#layers.length; i++) {
+            const layer = this.#layers[i];
+            layer.update(dt);
+        }
+    }
+
+    draw(ctx, dt) {
+        for (let i = 0; i < this.#layers.length; i++) {
+            const layer = this.#layers[i];
+            layer.draw(ctx, dt);
+        }
+
+    }
+
+    addLayer(layer) {
+        this.#layers.push(layer);
     }
 }
 
@@ -661,21 +684,24 @@ async function main() {
 
     [fonts, hud, characters, projectiles] = await loadAssets();
 
-    const players = []
-    const player = new Player(200, 350);
-    players.push(player);
+    const playersLayer = new Layer();
+    playersLayer.pushEntities([new Player(200, 350)]);
 
+    const bulletsLayer = new Layer();
     const bullets = [];
+
     for (let i = 0; i < 100; i++) {
         const bullet = new Bullet(220, 250);
         bullets.push(bullet);
     }
 
+    bulletsLayer.pushEntities(bulletsLayer);
+
     const scene = new Scene();
-    scene.pushEntities(players);
-    scene.pushEntities(bullets);
+    scene.addLayer(playersLayer);
+    scene.addLayer(bulletsLayer);
     SceneManager.loadScene(scene)
-    
+
     game.play();
 }
 
