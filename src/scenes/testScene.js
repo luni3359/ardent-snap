@@ -1,5 +1,5 @@
+import { Layer, Scene, SceneManager } from "../ardent/scenes";
 import { Player } from "../classes/player";
-import { Layer, Scene, SceneManager } from "../scenes";
 
 
 export class TestScene extends Scene {

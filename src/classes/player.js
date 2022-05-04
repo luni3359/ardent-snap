@@ -1,4 +1,4 @@
-import { Dim2D } from "../math";
+import { Dim2D } from "../ardent/math";
 import { Entity } from "./entity";
 
 export class Player extends Entity {

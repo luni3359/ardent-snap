@@ -1,10 +1,10 @@
-import { Ardent } from "./engine";
-import "./input";
-import { Dim2D } from "./math";
-import { loadAssets, loadInitAssets } from "./media";
-import { SceneManager } from "./scenes";
+import { Ardent } from "./ardent/engine";
+import "./ardent/input";
+import { Dim2D } from "./ardent/math";
+import { loadAssets, loadInitAssets } from "./ardent/media";
+import { SceneManager } from "./ardent/scenes";
+import { StorageManager } from "./ardent/storage";
 import { TestScene } from "./scenes/testScene";
-import { StorageManager } from "./storage";
 
 let dpi = window.devicePixelRatio;
 let fps, tps = 0;

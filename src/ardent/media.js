@@ -1,9 +1,9 @@
-import characters from "../static/sprites/characters.png";
-import fonts from "../static/sprites/fonts.png";
-import hud from "../static/sprites/hud.png";
-import menus from "../static/sprites/menus.png";
-import projectiles from "../static/sprites/projectiles.png";
-import data from "../static/sprites/spriteInfo.json";
+import characters from "../../static/sprites/characters.png";
+import fonts from "../../static/sprites/fonts.png";
+import hud from "../../static/sprites/hud.png";
+import menus from "../../static/sprites/menus.png";
+import projectiles from "../../static/sprites/projectiles.png";
+import data from "../../static/sprites/spriteInfo.json";
 import { print } from "./utils";
 
 export function loadImage(url) {
@@ -56,7 +56,7 @@ class AssetManager {
         for (let i = 0; i < assets.length; i++) {
             const dictionary = assets[i];
             for (key of dictionary) {
-                
+
             }
         }
     }
