@@ -1,6 +1,6 @@
 import { castStringType } from "./utils";
 
-export class SaveData {
+export class StorageManager {
     static save(key, data) {
         window.sessionStorage[key] = data;
     }

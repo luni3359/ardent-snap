@@ -2,10 +2,14 @@ node_modules
 *.js.map
 
 # Ignore everything except for the info file
-src/assets/*
-!src/assets/sprites
-src/assets/sprites/*
-!src/assets/sprites/spriteInfo.json
+# src/assets/*
+# !src/assets/sprites
+# src/assets/sprites/*
+# !src/assets/sprites/spriteInfo.json
+static/*
+!static/sprites
+static/sprites/*
+!static/sprites/spriteInfo.json
 
 # VS Code
 .vscode/*

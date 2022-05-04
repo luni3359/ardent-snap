@@ -1,9 +1,9 @@
-import characters from "./assets/sprites/characters.png";
-import fonts from "./assets/sprites/fonts.png";
-import hud from "./assets/sprites/hud.png";
-import menus from "./assets/sprites/menus.png";
-import projectiles from "./assets/sprites/projectiles.png";
-import data from "./assets/sprites/spriteInfo.json";
+import characters from "../static/sprites/characters.png";
+import fonts from "../static/sprites/fonts.png";
+import hud from "../static/sprites/hud.png";
+import menus from "../static/sprites/menus.png";
+import projectiles from "../static/sprites/projectiles.png";
+import data from "../static/sprites/spriteInfo.json";
 import { print } from "./utils";
 
 export function loadImage(url) {
@@ -28,4 +28,36 @@ export async function loadAssets() {
         await loadImage(characters),
         await loadImage(projectiles)
     ]);
+}
+
+class AssetManager {
+    #essentialAssets = [];
+    #otherAssets = [];
+
+    addEssentialAssets(arrayOrDict) {
+        if (typeof arrayOrDict == "array") {
+            arrayOrDict = [arrayOrDict];
+        }
+
+        this.#essentialAssets.push(arrayOrDict);
+    }
+
+    addAssets(arrayOrDict) {
+        if (typeof arrayOrDict == "array") {
+            arrayOrDict = [arrayOrDict];
+        }
+
+        this.#otherAssets.push(arrayOrDict);
+    }
+
+    loadAssets() {
+        const assets = this.#essentialAssets + this.#otherAssets
+
+        for (let i = 0; i < assets.length; i++) {
+            const dictionary = assets[i];
+            for (key of dictionary) {
+                
+            }
+        }
+    }
 }
