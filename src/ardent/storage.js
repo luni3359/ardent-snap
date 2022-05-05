@@ -1,7 +1,10 @@
 import { castStringType } from "./utils";
 
 export class StorageManager {
+    static storage = {};
+
     static save(key, data) {
+        StorageManager.storage[key] = data;
         window.sessionStorage[key] = data;
     }
 
@@ -16,17 +19,20 @@ export class StorageManager {
         }
 
         try {
-            return castStringType(data);
-        } catch (e) {
+            data = castStringType(data);
+        } finally {
+            StorageManager.storage[key] = data;
             return data;
         }
     }
 
     static delete(key) {
+        delete StorageManager[key];
         window.sessionStorage.removeItem(key);
     }
 
     static reset() {
+        StorageManager.storage = {};
         window.sessionStorage.clear();
     }
 }
