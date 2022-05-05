@@ -94,7 +94,9 @@ export class Player extends Sprite {
 
         if (this.frame >= 8) {
             if (this.animation == "idle") {
-                this.frame -= 8;
+                // it's very slightly off due to floating point accuracy
+                // but it's good enough
+                this.frame %= 8;
             } else {
                 this.frame = 3;
             }
