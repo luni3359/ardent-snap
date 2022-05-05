@@ -1,16 +1,16 @@
-import { loadAssets, loadInitAssets } from "./ardent/assets";
 import { Ardent } from "./ardent/engine";
 import "./ardent/input";
 import { Dim2D } from "./ardent/math";
 import { SceneManager } from "./ardent/scenes";
 import { StorageManager } from "./ardent/storage";
+import { loadAssets } from "./fetch";
 import { TestScene } from "./scenes/testScene";
+
 
 let dpi = window.devicePixelRatio;
 let fps, tps = 0;
 
 let game, cursor, showGrid, showCounters;
-let data, menus, fonts, hud, characters, projectiles;
 
 function drawCounters(ctx) {
     const tpsNumber = (1 / tps).toFixed(1);
@@ -59,12 +59,11 @@ async function main() {
     game.setResolution(640, 480);
     game.setTickRate(60);
 
+    await loadAssets();
+
     showCounters = StorageManager.load("displayCounters", true);
     showGrid = StorageManager.load("displayGrid", false);
     Ardent.debugMode = StorageManager.load("debugMode", false);
-
-    [data, menus] = await loadInitAssets();
-    [fonts, hud, characters, projectiles] = await loadAssets();
 
     SceneManager.loadScene(new TestScene());
 
@@ -76,4 +75,4 @@ window.addEventListener("resize", e => {
     // ctx.scale(dpi, dpi);
 })
 
-window.addEventListener("load", () => main);
+window.addEventListener("load", main);

@@ -1,23 +1,25 @@
 export class SceneManager {
-    #currentScene;
+    static #currentScene;
 
     static update(dt) {
-        if (this.#currentScene)
-            this.#currentScene.update(dt);
+        if (SceneManager.#currentScene)
+            SceneManager.#currentScene.update(dt);
     }
 
     static draw(ctx, dt) {
-        if (this.#currentScene)
-            this.#currentScene.draw(ctx, dt);
+        if (SceneManager.#currentScene)
+            SceneManager.#currentScene.draw(ctx, dt);
     }
 
     static loadScene(scene) {
-        this.#currentScene = scene;
+        console.log(`Loading "${scene.name}" scene`);
+        SceneManager.#currentScene = scene;
     }
 }
 
 export class Scene {
-    #layers = []
+    #name = ""; 
+    #layers = [];
 
     update(dt) {
         for (let i = 0; i < this.#layers.length; i++) {
@@ -36,6 +38,14 @@ export class Scene {
 
     addLayer(layer) {
         this.#layers.push(layer);
+    }
+
+    set name(newName) {
+        this.#name = newName; 
+    }
+
+    get name() {
+        return this.#name;
     }
 }
 

@@ -1,5 +1,5 @@
+import { Dim2D, Vector2D } from "../ardent/math";
 import { Entity } from "./entity";
-
 export class Bullet extends Entity {
     static #boundaryStart = new Dim2D(32, 16);
     static #boundaryEnd = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);

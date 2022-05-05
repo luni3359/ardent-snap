@@ -1,13 +1,15 @@
-import { Layer, Scene, SceneManager } from "../ardent/scenes";
+import { Layer, Scene } from "../ardent/scenes";
+import { Bullet } from "../classes/bullet";
 import { Player } from "../classes/player";
-
 
 export class TestScene extends Scene {
     #players = [];
     #bullets = [];
 
     constructor() {
-        super()
+        super();
+        this.name = "Testing";
+
         this.#players.push(new Player(200, 350));
 
         for (let i = 0; i < 100; i++) {
@@ -21,9 +23,7 @@ export class TestScene extends Scene {
         const bulletsLayer = new Layer();
         bulletsLayer.pushEntities(this.#bullets);
 
-        const scene = new Scene();
-        scene.addLayer(playersLayer);
-        scene.addLayer(bulletsLayer);
-        SceneManager.loadScene(scene);
+        this.addLayer(playersLayer);
+        this.addLayer(bulletsLayer);
     }
 }

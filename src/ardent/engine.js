@@ -1,5 +1,9 @@
 import { Dim2D } from "./math";
+import { SceneManager } from "./scenes";
 import { print, sleep } from "./utils";
+
+
+let tps, fps;
 
 export class Ardent {
     static debugMode = false;

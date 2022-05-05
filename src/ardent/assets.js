@@ -1,63 +1,64 @@
-import characters from "../../static/sprites/characters.png";
-import fonts from "../../static/sprites/fonts.png";
-import hud from "../../static/sprites/hud.png";
-import menus from "../../static/sprites/menus.png";
-import projectiles from "../../static/sprites/projectiles.png";
-import data from "../../static/sprites/spriteInfo.json";
 import { print } from "./utils";
 
-export function loadImage(url) {
-    return new Promise(resolve => {
-        const image = new Image();
-        image.addEventListener("load", () => {
-            print(`Loaded "${url}"`);
-            resolve(image);
-        });
-        image.src = url;
-    });
-}
+export class AssetManager {
+    static assets = {};
 
-export async function loadInitAssets() {
-    return [data, await loadImage(menus)];
-}
+    static #essentialAssets = [];
+    static #otherAssets = [];
 
-export async function loadAssets() {
-    return await Promise.all([
-        await loadImage(fonts),
-        await loadImage(hud),
-        await loadImage(characters),
-        await loadImage(projectiles)
-    ]);
-}
-
-class AssetManager {
-    #essentialAssets = [];
-    #otherAssets = [];
-
-    addEssentialAssets(arrayOrDict) {
-        if (typeof arrayOrDict == "array") {
-            arrayOrDict = [arrayOrDict];
-        }
-
-        this.#essentialAssets.push(arrayOrDict);
+    static addEssentialAssets(arrayOrDict) {
+        AssetManager.#addAssetsGeneric(AssetManager.#essentialAssets, arrayOrDict);
     }
 
-    addAssets(arrayOrDict) {
-        if (typeof arrayOrDict == "array") {
-            arrayOrDict = [arrayOrDict];
-        }
-
-        this.#otherAssets.push(arrayOrDict);
+    static addAssets(arrayOrDict) {
+        AssetManager.#addAssetsGeneric(AssetManager.#otherAssets, arrayOrDict);
     }
 
-    loadAssets() {
-        const assets = this.#essentialAssets + this.#otherAssets
+    static async loadAssets() {
+        const assets = AssetManager.#essentialAssets.concat(AssetManager.#otherAssets);
 
         for (let i = 0; i < assets.length; i++) {
-            const dictionary = assets[i];
-            for (key of dictionary) {
+            const asset = assets[i];
 
+            if (!("src" in asset)) {
+                // webpack loaded this asset directly as a json object
+                print(`Loaded "${asset.name}" asset locally`);
+                AssetManager.assets[asset.name] = asset.data;
+                continue;
             }
+
+            AssetManager.assets[asset.name] = await AssetManager.#loadImage(asset.src);
         }
     }
+
+    static #addAssetsGeneric(target, object) {
+        if (!Array.isArray(object)) {
+            object = [object];
+        }
+
+        for (const element of object) {
+            if (isLiteralObject(element.src)) {
+                element.data = element.src;
+                delete element.src;
+            }
+        }
+
+        target.push(...object);
+    }
+
+    static #loadImage(url) {
+        return new Promise(resolve => {
+            const image = new Image();
+            image.addEventListener("load", () => {
+                print(`Loaded "${url}"`);
+                resolve(image);
+            });
+            image.src = url;
+        });
+    }
+}
+
+// https://stackoverflow.com/a/16608074/7688278
+function isLiteralObject(a) {
+    return (!!a) && (a.constructor === Object);
 }

@@ -1,3 +1,4 @@
+import { Dim2D, Vector2D } from "../ardent/math";
 export class Entity {
     constructor(x, y, w, h) {
         this.position = new Vector2D(x || 0, y || 0);
