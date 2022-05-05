@@ -2,6 +2,7 @@ import { Scene } from "../scenes";
 
 class HudScene extends Scene {
     constructor() {
+        super("HUD");
         this.hudCache = null;
         this.hudTexture = null;
     }

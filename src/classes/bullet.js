@@ -1,3 +1,5 @@
+import { AssetManager } from "../ardent/assets";
+import { Ardent } from "../ardent/engine";
 import { Dim2D, Vector2D } from "../ardent/math";
 import { Entity } from "./entity";
 export class Bullet extends Entity {
@@ -11,6 +13,8 @@ export class Bullet extends Entity {
         this.topspeed = 250;
         this.diameter = 16;
         this.color = 0;
+        
+        this.projectiles = AssetManager.assets.projectiles;
 
         const randomDirection = new Vector2D(Math.random() - 0.5, Math.random() - 0.5).unit();
         this.speed = randomDirection.multiply(new Vector2D(this.topspeed * Math.random(), this.topspeed * Math.random()));
@@ -56,7 +60,7 @@ export class Bullet extends Entity {
                 ctxC.fillStyle = "cyan";
                 ctxC.fillRect(x, 0, size, size);
             }
-            ctxC.drawImage(projectiles, spriteXOffset + x, spriteYOffset, size, size, x, 0, size, size);
+            ctxC.drawImage(this.projectiles, spriteXOffset + x, spriteYOffset, size, size, x, 0, size, size);
         }
 
         this.draw(ctx);

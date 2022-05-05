@@ -1,12 +1,18 @@
-import { Dim2D } from "../ardent/math";
-import { Entity } from "./entity";
+import { AssetManager } from "../ardent/assets";
+import { Ardent } from "../ardent/engine";
+import { Dim2D, Vector2D } from "../ardent/math";
+import { Sprite } from "./sprite";
 
-export class Player extends Entity {
+export class Player extends Sprite {
     static #boundaryStart = new Dim2D(32, 16);
     static #boundaryEnd = new Dim2D(16 * 24 + 16 * 2, 16 * 28 + 16);
 
     constructor(x, y, w, h) {
         super(x, y, w || 32, h || 48);
+
+        this.data = AssetManager.assets.data;
+        this.characters = AssetManager.assets.characters;
+
         this.character = "reimu";
         this.speed = 255;
 
@@ -21,21 +27,21 @@ export class Player extends Entity {
         const direction = new Vector2D();
         let focusModifier = 1;
 
-        if (keys["KeyA"] || keys["ArrowLeft"]) {
-            direction.x -= 1;
-        }
+        // if (keys["KeyA"] || keys["ArrowLeft"]) {
+        //     direction.x -= 1;
+        // }
 
-        if (keys["KeyD"] || keys["ArrowRight"]) {
-            direction.x += 1;
-        }
+        // if (keys["KeyD"] || keys["ArrowRight"]) {
+        //     direction.x += 1;
+        // }
 
-        if (keys["KeyW"] || keys["ArrowUp"]) {
-            direction.y -= 1;
-        }
+        // if (keys["KeyW"] || keys["ArrowUp"]) {
+        //     direction.y -= 1;
+        // }
 
-        if (keys["KeyS"] || keys["ArrowDown"]) {
-            direction.y += 1;
-        }
+        // if (keys["KeyS"] || keys["ArrowDown"]) {
+        //     direction.y += 1;
+        // }
 
         if (direction.x != 0) {
             if (direction.x > 0) {
@@ -47,19 +53,19 @@ export class Player extends Entity {
             this.changeAnimation("idle");
         }
 
-        if (keys["ShiftLeft"]) {
-            this.isFocused = true;
-            focusModifier = 0.5;
-        } else {
-            this.isFocused = false;
-        }
+        // if (keys["ShiftLeft"]) {
+        //     this.isFocused = true;
+        //     focusModifier = 0.5;
+        // } else {
+        //     this.isFocused = false;
+        // }
 
         direction.normalize();
 
         this.position.x += this.speed * focusModifier * direction.x * dt;
         this.position.y += this.speed * focusModifier * direction.y * dt;
 
-        this.checkBulletCollision();
+        // this.checkBulletCollision();
         this.checkBoundCollision();
     }
 
@@ -68,7 +74,7 @@ export class Player extends Entity {
     }
 
     drawAnimation(ctx, dt) {
-        const char = data['character'][this.character][this.animation || "idle"];
+        const char = this.data['character'][this.character][this.animation || "idle"];
         const x = Math.floor(this.position.x);
         const y = Math.floor(this.position.y);
         const frameI = Math.floor(this.frame);
@@ -81,7 +87,7 @@ export class Player extends Entity {
             ctx.fillRect(x, y, char.w, char.h);
         }
 
-        ctx.drawImage(characters, char.x + char.w * frameI, char.y, char.w, char.h, x, y, char.w, char.h);
+        ctx.drawImage(this.characters, char.x + char.w * frameI, char.y, char.w, char.h, x, y, char.w, char.h);
 
         // changes 12 times a second
         this.frame += 12 * dt;
@@ -96,10 +102,10 @@ export class Player extends Entity {
     }
 
     drawFocusSign(ctx, dt) {
-        const character = data['character'][this.character][this.animation || "idle"];
+        const character = this.data['character'][this.character][this.animation || "idle"];
         const x = Math.floor(this.position.x);
         const y = Math.floor(this.position.y);
-        const sign = data['focus-sign'];
+        const sign = this.data['focus-sign'];
 
         ctx.setTransform(1, 0, 0, 1, x + character.w / 2, y + character.h / 2);
         ctx.rotate(-this.focusFrame);

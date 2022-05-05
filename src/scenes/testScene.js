@@ -7,8 +7,7 @@ export class TestScene extends Scene {
     #bullets = [];
 
     constructor() {
-        super();
-        this.name = "Testing";
+        super("Testing");
 
         this.#players.push(new Player(200, 350));
 
@@ -17,12 +16,16 @@ export class TestScene extends Scene {
             this.#bullets.push(bullet);
         }
 
+        // const backgroundLayer = new Layer();
+        // backgroundLayer.pushEntities();
+
         const playersLayer = new Layer();
         playersLayer.pushEntities(this.#players);
 
         const bulletsLayer = new Layer();
         bulletsLayer.pushEntities(this.#bullets);
 
+        // this.addLayer(backgroundLayer);
         this.addLayer(playersLayer);
         this.addLayer(bulletsLayer);
     }

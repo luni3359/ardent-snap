@@ -1,25 +1,43 @@
+import { print } from "./utils";
+
 export class SceneManager {
-    static #currentScene;
+    static #activeScenes = [];
 
     static update(dt) {
-        if (SceneManager.#currentScene)
-            SceneManager.#currentScene.update(dt);
+        for (let i = 0; i < SceneManager.#activeScenes.length; i++) {
+            const scene = SceneManager.#activeScenes[i];
+            scene.update(dt);
+        }
     }
 
     static draw(ctx, dt) {
-        if (SceneManager.#currentScene)
-            SceneManager.#currentScene.draw(ctx, dt);
+        for (let i = 0; i < SceneManager.#activeScenes.length; i++) {
+            const scene = SceneManager.#activeScenes[i];
+            scene.draw(ctx, dt);
+        }
     }
 
     static loadScene(scene) {
-        console.log(`Loading "${scene.name}" scene`);
-        SceneManager.#currentScene = scene;
+        print(`Loading "${scene.name}" scene`);
+        SceneManager.#activeScenes.push(scene);
     }
 }
 
 export class Scene {
-    #name = ""; 
+    #name = "";
     #layers = [];
+
+    constructor(name) {
+        this.name = name;
+    }
+
+    set name(newName) {
+        this.#name = newName;
+    }
+
+    get name() {
+        return this.#name;
+    }
 
     update(dt) {
         for (let i = 0; i < this.#layers.length; i++) {
@@ -33,29 +51,23 @@ export class Scene {
             const layer = this.#layers[i];
             layer.draw(ctx, dt);
         }
-
     }
 
     addLayer(layer) {
+        if (!layer)
+            throw Error("Cannot add undefined layer");
+
         this.#layers.push(layer);
-    }
-
-    set name(newName) {
-        this.#name = newName; 
-    }
-
-    get name() {
-        return this.#name;
     }
 }
 
 export class Layer {
-    #entityList = []
+    #entityList = [];
 
     update(dt) {
         for (let i = 0; i < this.#entityList.length; i++) {
             const entitySublist = this.#entityList[i];
-            for (let j = 0; j < entitySublist; j++) {
+            for (let j = 0; j < entitySublist.length; j++) {
                 const entity = entitySublist[j];
                 entity.update(dt);
             }
@@ -65,7 +77,7 @@ export class Layer {
     draw(ctx, dt) {
         for (let i = 0; i < this.#entityList.length; i++) {
             const entitySublist = this.#entityList[i];
-            for (let j = 0; j < entitySublist; j++) {
+            for (let j = 0; j < entitySublist.length; j++) {
                 const entity = entitySublist[j];
                 entity.draw(ctx, dt);
             }
