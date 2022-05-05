@@ -1,4 +1,4 @@
-import { print } from "./utils";
+import { isLiteralObject, print } from "./utils";
 
 export class AssetManager {
     static assets = {};
@@ -56,9 +56,4 @@ export class AssetManager {
             image.src = url;
         });
     }
-}
-
-// https://stackoverflow.com/a/16608074/7688278
-function isLiteralObject(a) {
-    return (!!a) && (a.constructor === Object);
 }

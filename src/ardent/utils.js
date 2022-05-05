@@ -34,3 +34,9 @@ export function castStringType(val) {
             throw Exception("'castStringType' received a plain string value.");
     }
 }
+
+// https://stackoverflow.com/a/16608074/7688278
+// Checks whether the "a" is {}
+export function isLiteralObject(a) {
+    return (!!a) && (a.constructor === Object);
+}

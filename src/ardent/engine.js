@@ -17,6 +17,7 @@ export class Ardent {
 
     #fakeLagTimer = 0;
     #fakeLagEnabled = false;
+    #fakeLagDuration = 500;
 
     constructor() {
         this.canvas = null;
@@ -40,10 +41,10 @@ export class Ardent {
 
         if (this.#fakeLagEnabled) {
             this.#fakeLagTimer++;
-            if (this.#fakeLagTimer > 500) {
+            if (this.#fakeLagTimer > this.#fakeLagDuration) {
                 this.#fakeLagTimer = 0;
-                sleep(500);
-                print("whoops");
+                sleep(this.#fakeLagDuration);
+                print(`Game stuttered for ${this.#fakeLagDuration}ms`);
             }
         }
 
